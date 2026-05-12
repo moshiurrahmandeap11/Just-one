@@ -1,7 +1,25 @@
 # AI Smart Installer — v2.0
 
+![License](https://img.shields.io/badge/license-MIT-green)
+![Platform](https://img.shields.io/badge/platform-Linux-blue)
+![VSCode](https://img.shields.io/badge/vscode-Continue%20Ready-007ACC)
+![AI](https://img.shields.io/badge/local--ai-ollama-orange)
+![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
+
+---
+
 > One-script local AI setup for VSCode.
 > Installs Ollama, fetches models from the live library, filters them by your hardware, configures the Continue extension — all automatically.
+
+---
+
+##  Author
+
+#  **Moshiur Rahman Deap**
+> Full-stack Developer | AI Automation Builder
+
+ Portfolio: [Moshiur Rahman Deap](https://moshiurrahman.online)  
+ GitHub:    [Click Here](https://github.com/moshiurrahmandeap11)  
 
 ---
 
