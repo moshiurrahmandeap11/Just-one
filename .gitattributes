@@ -1,0 +1,2 @@
+*.sh linguist-language=Shell
+*.ps1 linguist-language=PowerShell
