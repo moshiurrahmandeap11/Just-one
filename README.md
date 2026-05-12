@@ -13,13 +13,14 @@
 
 ---
 
-##  Author
+## Author
 
-#  **Moshiur Rahman Deap**
+# **Moshiur Rahman Deap**
+
 > Full-stack Developer | AI Automation Builder
 
- Portfolio: [Moshiur Rahman Deap](https://moshiurrahman.online)  
- GitHub:    [Click Here](https://github.com/moshiurrahmandeap11)  
+Portfolio: [Moshiur Rahman Deap](https://moshiurrahman.online)  
+ GitHub: [Click Here](https://github.com/moshiurrahmandeap11)
 
 ---
 
@@ -33,19 +34,19 @@
 
 ## What It Does
 
-| Step | Action |
-|------|--------|
-| 1 | Detects your Linux distribution and installs `curl` if missing |
-| 2 | Reads your CPU, RAM, GPU, VRAM and free disk space |
-| 3 | Installs Ollama via the official installer script |
-| 4 | Starts the Ollama background server |
-| 5 | Verifies VSCode CLI and installs the Continue extension |
-| 6 | Fetches the full live model list from `ollama.com/library` |
-| 7 | Filters models by your available memory — no hardcoded lists |
-| 8 | Lets you pick models interactively from a numbered table |
-| 9 | Pulls selected models and guarantees the fallback is installed |
-| 10 | Writes a complete `~/.continue/config.yaml` |
-| 11 | Opens VSCode in the current directory |
+| Step | Action                                                         |
+| ---- | -------------------------------------------------------------- |
+| 1    | Detects your Linux distribution and installs `curl` if missing |
+| 2    | Reads your CPU, RAM, GPU, VRAM and free disk space             |
+| 3    | Installs Ollama via the official installer script              |
+| 4    | Starts the Ollama background server                            |
+| 5    | Verifies VSCode CLI and installs the Continue extension        |
+| 6    | Fetches the full live model list from `ollama.com/library`     |
+| 7    | Filters models by your available memory — no hardcoded lists   |
+| 8    | Lets you pick models interactively from a numbered table       |
+| 9    | Pulls selected models and guarantees the fallback is installed |
+| 10   | Writes a complete `~/.continue/config.yaml`                    |
+| 11   | Opens VSCode in the current directory                          |
 
 ---
 
@@ -62,31 +63,63 @@
 ## Installation
 
 ### Linux
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/moshiurrahmandeap11/Just-one/main/setup.sh | bash
 ```
+
 ### MacOS
+
 ```bash
 coming soon
 ```
+
 ### Microsoft Windows
+
+---
+
+## Ready Your PowerShell
+
+- Open PowerShell as Administrator
+- Or press `Win + X` → Windows PowerShell (Admin)
+
 ```bash
-coming soon
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
+
+### Clone the repo
+
+```bash
+https://github.com/moshiurrahmandeap11/Just-one
+```
+
+### change the directory
+
+```bash
+cd Just-one
+```
+
+### Run the script:
+
+```bash
+.\install-ai.ps1
+```
+
+---
 
 ---
 
 ## Linux Supported Distributions
 
-| Distro Family | Package Manager |
-|---------------|----------------|
-| Ubuntu, Debian, Mint, Pop, Kali | `apt` |
-| Fedora | `dnf` |
-| CentOS, RHEL, AlmaLinux, Rocky | `yum` |
-| Arch, Manjaro, EndeavourOS | `pacman` |
-| openSUSE, SLES | `zypper` |
-| Alpine | `apk` |
-| Void Linux | `xbps` |
+| Distro Family                   | Package Manager |
+| ------------------------------- | --------------- |
+| Ubuntu, Debian, Mint, Pop, Kali | `apt`           |
+| Fedora                          | `dnf`           |
+| CentOS, RHEL, AlmaLinux, Rocky  | `yum`           |
+| Arch, Manjaro, EndeavourOS      | `pacman`        |
+| openSUSE, SLES                  | `zypper`        |
+| Alpine                          | `apk`           |
+| Void Linux                      | `xbps`          |
 
 ---
 
@@ -111,11 +144,11 @@ otherwise        →  use System RAM
 
 **Profile labels shown in the table:**
 
-| Label | Estimated Size |
-|-------|----------------|
-| `lightweight` | ≤ 2 GB |
-| `balanced` | 3 – 6 GB |
-| `heavy` | 7 GB + |
+| Label         | Estimated Size |
+| ------------- | -------------- |
+| `lightweight` | ≤ 2 GB         |
+| `balanced`    | 3 – 6 GB       |
+| `heavy`       | 7 GB +         |
 
 ---
 
