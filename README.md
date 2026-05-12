@@ -61,7 +61,7 @@
 
 ## Installation
 
-### Linux / MacOS
+### Linux
 ```bash
 curl -fsSL https://raw.githubusercontent.com/moshiurrahmandeap11/Just-one/main/setup.sh | bash
 ```
