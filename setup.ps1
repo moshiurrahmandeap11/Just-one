@@ -1,24 +1,24 @@
-﻿# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+﻿# ──────────────────────────────────────────────────────────────────
 #  AI Smart Installer  |  VSCode + Ollama + Continue  |  v2.0
 #  Windows PowerShell Version
 #  Author : moshiurrahmandeap11
 #  License: MIT
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ──────────────────────────────────────────────────────────────────
 
 Clear-Host
 $ErrorActionPreference = "Stop"
 
-# â”€â”€ PowerShell Host Configuration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── PowerShell Host Configuration ────────────────────────────────
 $Host.UI.RawUI.WindowTitle = "AI Smart Installer v2.0"
 
-# â”€â”€ Color Functions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Color Functions ──────────────────────────────────────────────
 function Write-Log   { Write-Host "  OK  " -NoNewline -ForegroundColor Green; Write-Host "  $args" -ForegroundColor White }
 function Write-Warn  { Write-Host "  >>  " -NoNewline -ForegroundColor Yellow; Write-Host "  $args" -ForegroundColor White }
 function Write-Error { Write-Host "  !!  " -NoNewline -ForegroundColor Red; Write-Host "  $args" -ForegroundColor White }
 function Write-Info  { Write-Host "  --  " -NoNewline -ForegroundColor Cyan; Write-Host "  $args" }
 function Write-Blank { Write-Host "" }
 
-# â”€â”€ Section Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ── Section Header ────────────────────────────────────────────────
 function Write-Section {
     param([string]$Title)
     $width = 56
@@ -50,11 +50,10 @@ function Show-Banner {
     Write-Host ""
 }
 
-
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 1  |  Ensure Chocolatey is available
 #  Chocolatey is the package manager for Windows
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Ensure-Chocolatey {
     Write-Section "Checking Chocolatey"
@@ -76,9 +75,9 @@ function Ensure-Chocolatey {
     $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 2  |  Collect system hardware information
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Get-SystemInfo {
     Write-Section "System Information"
@@ -155,9 +154,9 @@ function Get-SystemInfo {
     $script:DISK_FREE = $DISK_FREE
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 3  |  Install and start Ollama
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Install-Ollama {
     Write-Section "Ollama Installation"
@@ -199,9 +198,23 @@ function Start-Ollama {
     Write-Log "Ollama server started"
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function Get-OllamaPath {
+    $ollamaExe = "$env:LOCALAPPDATA\Programs\Ollama\ollama.exe"
+    if (Test-Path $ollamaExe) {
+        return $ollamaExe
+    }
+
+    $command = Get-Command ollama -ErrorAction SilentlyContinue
+    if ($command) {
+        return $command.Path
+    }
+
+    return $null
+}
+
+# ─────────────────────────────────────────────────────────────────
 #  STEP 4  |  VSCode + Continue extension
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Check-VSCode {
     Write-Section "VSCode + Continue Extension"
@@ -227,9 +240,9 @@ function Install-Continue {
     Write-Log "Continue extension installed"
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 5  |  Fetch model list from Ollama library
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Get-OllamaModels {
     Write-Section "Fetching Ollama Model Library"
@@ -254,9 +267,9 @@ function Get-OllamaModels {
     Write-Log "$count models fetched"
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  MODEL SIZE ESTIMATOR
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Get-ModelSizeGB {
     param([string]$Model)
@@ -283,9 +296,9 @@ function Get-ModelSizeGB {
     return $size
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 6  |  Recommend compatible models based on hardware
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Show-Recommendations {
     Write-Section "Model Recommendation"
@@ -376,7 +389,11 @@ function Show-Recommendations {
     # Show already installed models
     Write-Host "  Already Installed:" -ForegroundColor White
     try {
-        $installed = ollama list 2>$null | Select-Object -Skip 1
+        $ollamaPath = Get-OllamaPath
+        if (-not $ollamaPath) {
+            throw "Ollama executable not found"
+        }
+        $installed = & $ollamaPath list 2>$null | Select-Object -Skip 1
         if ($installed) {
             $installed | ForEach-Object { Write-Host "    $_" -ForegroundColor Green }
         } else {
@@ -388,9 +405,9 @@ function Show-Recommendations {
     Write-Blank
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 7  |  Interactive model selection
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Select-Models {
     Write-Host "  Select models to install:" -ForegroundColor White
@@ -401,6 +418,7 @@ function Select-Models {
     $input = Read-Host
 
     $script:SELECTED = @()
+    $script:SUCCESSFUL_MODELS = @()
 
     if ([string]::IsNullOrWhiteSpace($input) -or $input -eq "0") {
         Write-Log "No selection -- fallback model will be used"
@@ -417,9 +435,12 @@ function Select-Models {
     }
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 8  |  Pull selected models from Ollama registry
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
+
+# finally download the selected models from Ollama registry
+
 
 function Install-SelectedModels {
     Write-Section "Downloading Selected Models"
@@ -429,27 +450,33 @@ function Install-SelectedModels {
         return
     }
 
+    $ollamaPath = Get-OllamaPath
+    if (-not $ollamaPath) {
+        Write-Error "Ollama executable not found. Please install Ollama and run this script again."
+        exit 1
+    }
+
     foreach ($m in $SELECTED) {
         try {
-            $installed = ollama list 2>$null | Select-String $m
+            $installed = & $ollamaPath list 2>$null | Select-String $m
             if ($installed) {
                 Write-Log "$m -- already installed"
+                $script:SUCCESSFUL_MODELS += $m
             } else {
                 Write-Warn "Pulling $m ..."
-                ollama pull $m
+                & $ollamaPath pull $m
                 Write-Log "$m -- installed"
+                $script:SUCCESSFUL_MODELS += $m
             }
         } catch {
-            Write-Warn "Pulling $m ..."
-            ollama pull $m
-            Write-Log "$m -- installed"
+            Write-Warn "Failed to pull $m -- skipped"
         }
     }
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 9  |  Guarantee the fallback model is present
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Install-Fallback {
     Write-Section "Fallback Model"
@@ -458,42 +485,45 @@ function Install-Fallback {
         $script:FALLBACK_MODEL = "qwen2.5-coder:1.5b"
     }
 
+    $ollamaPath = Get-OllamaPath
+    if (-not $ollamaPath) {
+        Write-Error "Ollama executable not found. Please install Ollama and run this script again."
+        exit 1
+    }
+
     try {
-        $installed = ollama list 2>$null | Select-String $FALLBACK_MODEL
+        $installed = & $ollamaPath list 2>$null | Select-String $FALLBACK_MODEL
         if ($installed) {
             Write-Log "$FALLBACK_MODEL -- already installed"
         } else {
             Write-Warn "Installing fallback -- $FALLBACK_MODEL ..."
-            ollama pull $FALLBACK_MODEL
+            & $ollamaPath pull $FALLBACK_MODEL
             Write-Log "$FALLBACK_MODEL -- installed"
         }
     } catch {
         Write-Warn "Installing fallback -- $FALLBACK_MODEL ..."
-        ollama pull $FALLBACK_MODEL
+        & $ollamaPath pull $FALLBACK_MODEL
         Write-Log "$FALLBACK_MODEL -- installed"
     }
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  Build final model list
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Build-FinalModels {
     $script:FINAL_MODELS = @()
     
-    if ($SELECTED.Count -gt 0) {
-        $script:FINAL_MODELS = $SELECTED
-    }
-
-    $found = $FINAL_MODELS -contains $FALLBACK_MODEL
-    if (-not $found) {
+    if ($SUCCESSFUL_MODELS.Count -gt 0) {
+        $script:FINAL_MODELS = $SUCCESSFUL_MODELS
+    } else {
         $script:FINAL_MODELS += $FALLBACK_MODEL
     }
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 10  |  Write the Continue extension configuration
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Set-ContinueConfig {
     Write-Section "Writing Continue Configuration"
@@ -503,7 +533,7 @@ function Set-ContinueConfig {
         New-Item -ItemType Directory -Path $configDir -Force | Out-Null
     }
 
-    $configPath = "$configDir\config.json"
+    $configPath = "$configDir\config.yaml"
     
     $modelsConfig = @()
     foreach ($m in $FINAL_MODELS) {
@@ -553,9 +583,9 @@ function Set-ContinueConfig {
     Write-Log "Config written -- $configPath"
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 11  |  Launch VSCode in the current directory
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Open-VSCode {
     Write-Section "Launching VSCode"
@@ -565,9 +595,9 @@ function Open-VSCode {
     Write-Log "VSCode launched"
 }
 
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 #  STEP 12  |  Print installation summary
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 function Show-Summary {
     Write-Section "Setup Complete"
@@ -588,7 +618,7 @@ function Show-Summary {
     Write-Blank
     Write-Host "  Config File    " -NoNewline -ForegroundColor White
     Write-Host "|  " -NoNewline -ForegroundColor DarkGray
-    Write-Host "$env:USERPROFILE\.continue\config.json" -ForegroundColor DarkGray
+    Write-Host "$env:USERPROFILE\.continue\config.yaml" -ForegroundColor DarkGray
 
     Write-Host "  Ollama Status  " -NoNewline -ForegroundColor White
     Write-Host "|  " -NoNewline -ForegroundColor DarkGray
@@ -627,8 +657,10 @@ function Open-GitHub {
 
     Start-Process $url
 }
+
+# ─────────────────────────────────────────────────────────────────
 #  ENTRY POINT  |  Run all installer steps in sequence
-# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# ─────────────────────────────────────────────────────────────────
 
 # Check for administrator privileges
 $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")
@@ -653,7 +685,9 @@ Get-OllamaModels
 Show-Recommendations
 Select-Models
 Install-SelectedModels
-Install-Fallback
+if ($SUCCESSFUL_MODELS.Count -eq 0) {
+    Install-Fallback
+}
 Build-FinalModels
 Set-ContinueConfig
 Open-VSCode
@@ -661,4 +695,4 @@ Show-Summary
 Open-GitHub
 
 Write-Host "  Press any key to exit..." -ForegroundColor DarkGray
-$null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+$null = $Host.UI.RawUI.ReadKey([System.Management.Automation.Host.ReadKeyOptions]::NoEcho -bor [System.Management.Automation.Host.ReadKeyOptions]::IncludeKeyDown)
