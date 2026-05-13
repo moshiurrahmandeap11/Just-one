@@ -11,7 +11,7 @@ Clear-Host
 $ErrorActionPreference = "Stop"
 
 # ── PowerShell Host Configuration ────────────────────────────────
-$Host.UI.RawUI.WindowTitle = "AI Smart Installer v2.0"
+$Host.UI.RawUI.WindowTitle = "Just One Installer v2.0"
 
 # ── Color Functions ──────────────────────────────────────────────
 function Write-Log { Write-Host "  OK  " -NoNewline -ForegroundColor Green; Write-Host "  $args" -ForegroundColor White }
