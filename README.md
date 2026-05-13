@@ -27,50 +27,41 @@ Portfolio: [Moshiur Rahman Deap](https://moshiurrahman.online)
  GitHub: [Click Here](https://github.com/moshiurrahmandeap11)
 
 ---
-## Installation
 
-### Linux
+# Installation
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/moshiurrahmandeap11/Just-one/main/setup.sh | bash
-```
-
-### MacOS
+## Linux
 
 ```bash
-coming soon
+curl -fsSL https://just-one-tau.vercel.app/linux | bash
 ```
-
-### Microsoft Windows
 
 ---
 
-## Ready Your PowerShell
-
-- Open PowerShell as Administrator
-- Or press `Win + X` → Windows PowerShell (Admin)
+## macOS
 
 ```bash
-Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+curl -fsSL https://just-one-tau.vercel.app/mac | bash
 ```
 
-### Clone the repo
+---
 
-```bash
-https://github.com/moshiurrahmandeap11/Just-one
+## Microsoft Windows
+
+### Open PowerShell as Administrator
+
+Or:
+
+```text
+Win + X → Windows PowerShell (Admin)
 ```
 
-### change the directory
+### Run One Command
 
-```bash
-cd Just-one
+```powershell
+Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://just-one-tau.vercel.app/windows | iex
 ```
 
-### Run the script:
-
-```bash
-.\setup.ps1
-```
 ---
 
 ## Preview
