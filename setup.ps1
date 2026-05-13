@@ -1,7 +1,9 @@
 ﻿# ──────────────────────────────────────────────────────────────────
-#  AI Smart Installer  |  VSCode + Ollama + Continue  |  v2.0
+#  Just One  |  VSCode + Ollama + Continue  |  v2.0
 #  Windows PowerShell Version
-#  Author : moshiurrahmandeap11
+#  Author : Moshiur Rahman Deap
+# Contact : https://www.linkedin.com/in/moshiurrahmandeap
+# Github : https://github.com/moshiurrahmandeap11
 #  License: MIT
 # ──────────────────────────────────────────────────────────────────
 
@@ -12,10 +14,10 @@ $ErrorActionPreference = "Stop"
 $Host.UI.RawUI.WindowTitle = "AI Smart Installer v2.0"
 
 # ── Color Functions ──────────────────────────────────────────────
-function Write-Log   { Write-Host "  OK  " -NoNewline -ForegroundColor Green; Write-Host "  $args" -ForegroundColor White }
-function Write-Warn  { Write-Host "  >>  " -NoNewline -ForegroundColor Yellow; Write-Host "  $args" -ForegroundColor White }
+function Write-Log { Write-Host "  OK  " -NoNewline -ForegroundColor Green; Write-Host "  $args" -ForegroundColor White }
+function Write-Warn { Write-Host "  >>  " -NoNewline -ForegroundColor Yellow; Write-Host "  $args" -ForegroundColor White }
 function Write-Error { Write-Host "  !!  " -NoNewline -ForegroundColor Red; Write-Host "  $args" -ForegroundColor White }
-function Write-Info  { Write-Host "  --  " -NoNewline -ForegroundColor Cyan; Write-Host "  $args" }
+function Write-Info { Write-Host "  --  " -NoNewline -ForegroundColor Cyan; Write-Host "  $args" }
 function Write-Blank { Write-Host "" }
 
 # ── Section Header ────────────────────────────────────────────────
@@ -43,8 +45,9 @@ function Show-Banner {
     Write-Host ""
     Write-Host "  ╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
     Write-Host "  ║                                                        ║" -ForegroundColor Cyan
-    Write-Host "  ║           AI  SMART  INSTALLER   v2.0                  ║" -ForegroundColor Cyan
+    Write-Host "  ║           Just One Installer  v2.0                     ║" -ForegroundColor Cyan
     Write-Host "  ║       VSCode  +  Ollama  +  Continue  Dev              ║" -ForegroundColor Cyan
+    Write-Host "  ║       Developed By Moshiur Rahman Deap                 ║" -ForegroundColor Cyan
     Write-Host "  ║                                                        ║" -ForegroundColor Cyan
     Write-Host "  ╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Host ""
@@ -72,7 +75,7 @@ function Ensure-Chocolatey {
     
     Write-Log "Chocolatey installed successfully"
     # Refresh environment variables
-    $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
+    $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
 }
 
 # ─────────────────────────────────────────────────────────────────
@@ -102,17 +105,18 @@ function Get-SystemInfo {
             $GPU_NAME = $gpu.Name
             $GPU_VRAM = [math]::Round($gpu.AdapterRAM / 1GB, 1)
         }
-    } catch {
+    }
+    catch {
         # GPU detection failed
     }
 
     # Check for NVIDIA specifically
     if (Get-Command nvidia-smi -ErrorAction SilentlyContinue) {
-        $nvidiaInfo = nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>$null
+        $nvidiaInfo = nvidia-smi --query-gpu=name, memory.total --format=csv, noheader 2>$null
         if ($nvidiaInfo) {
             $nvidiaData = $nvidiaInfo -split ','
             $GPU_NAME = $nvidiaData[0].Trim()
-            $GPU_VRAM = [math]::Round([int]($nvidiaData[1].Trim() -replace ' MiB','') / 1024, 1)
+            $GPU_VRAM = [math]::Round([int]($nvidiaData[1].Trim() -replace ' MiB', '') / 1024, 1)
         }
     }
 
@@ -257,7 +261,8 @@ function Get-OllamaModels {
         $pattern = 'href="/library/([^"]+)"'
         $matches = [regex]::Matches($content, $pattern)
         $OLLAMA_MODELS = ($matches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique) -join "`n"
-    } catch {
+    }
+    catch {
         Write-Warn "Could not reach ollama.com -- using built-in model list"
         $OLLAMA_MODELS = "tinyllama`nphi`ngemma`nmistral`nllama3`ncodellama`ndeepseek-r1`nqwen2.5-coder`nllava"
     }
@@ -306,7 +311,8 @@ function Show-Recommendations {
     if ($GPU_VRAM -ge 8) {
         $EFFECTIVE_MEM = $GPU_VRAM
         $MEM_SOURCE = "GPU VRAM"
-    } else {
+    }
+    else {
         $EFFECTIVE_MEM = $RAM_GB
         $MEM_SOURCE = "System RAM"
     }
@@ -343,10 +349,12 @@ function Show-Recommendations {
             if ($SIZE -le 2) { 
                 $tag = "lightweight"
                 $color = "Green"
-            } elseif ($SIZE -le 6) { 
+            }
+            elseif ($SIZE -le 6) { 
                 $tag = "balanced"
                 $color = "Yellow"
-            } else { 
+            }
+            else { 
                 $tag = "heavy"
                 $color = "Red"
             }
@@ -396,10 +404,12 @@ function Show-Recommendations {
         $installed = & $ollamaPath list 2>$null | Select-Object -Skip 1
         if ($installed) {
             $installed | ForEach-Object { Write-Host "    $_" -ForegroundColor Green }
-        } else {
+        }
+        else {
             Write-Host "    None" -ForegroundColor DarkGray
         }
-    } catch {
+    }
+    catch {
         Write-Host "    None" -ForegroundColor DarkGray
     }
     Write-Blank
@@ -429,7 +439,8 @@ function Select-Models {
     foreach ($num in $numbers) {
         if ($MODEL_MAP.ContainsKey([int]$num)) {
             $script:SELECTED += $MODEL_MAP[[int]$num]
-        } else {
+        }
+        else {
             Write-Warn "Invalid entry: $num -- skipped"
         }
     }
@@ -462,13 +473,15 @@ function Install-SelectedModels {
             if ($installed) {
                 Write-Log "$m -- already installed"
                 $script:SUCCESSFUL_MODELS += $m
-            } else {
+            }
+            else {
                 Write-Warn "Pulling $m ..."
                 & $ollamaPath pull $m
                 Write-Log "$m -- installed"
                 $script:SUCCESSFUL_MODELS += $m
             }
-        } catch {
+        }
+        catch {
             Write-Warn "Failed to pull $m -- skipped"
         }
     }
@@ -495,12 +508,14 @@ function Install-Fallback {
         $installed = & $ollamaPath list 2>$null | Select-String $FALLBACK_MODEL
         if ($installed) {
             Write-Log "$FALLBACK_MODEL -- already installed"
-        } else {
+        }
+        else {
             Write-Warn "Installing fallback -- $FALLBACK_MODEL ..."
             & $ollamaPath pull $FALLBACK_MODEL
             Write-Log "$FALLBACK_MODEL -- installed"
         }
-    } catch {
+    }
+    catch {
         Write-Warn "Installing fallback -- $FALLBACK_MODEL ..."
         & $ollamaPath pull $FALLBACK_MODEL
         Write-Log "$FALLBACK_MODEL -- installed"
@@ -516,7 +531,8 @@ function Build-FinalModels {
     
     if ($SUCCESSFUL_MODELS.Count -gt 0) {
         $script:FINAL_MODELS = $SUCCESSFUL_MODELS
-    } else {
+    }
+    else {
         $script:FINAL_MODELS += $FALLBACK_MODEL
     }
 }
@@ -539,27 +555,28 @@ function Set-ContinueConfig {
     foreach ($m in $FINAL_MODELS) {
         if ($m -eq $FALLBACK_MODEL) {
             $modelsConfig += @{
-                name = $m
+                name     = $m
                 provider = "ollama"
-                model = $m
-                roles = @("autocomplete")
+                model    = $m
+                roles    = @("autocomplete")
             }
-        } else {
+        }
+        else {
             $modelsConfig += @{
-                name = $m
+                name     = $m
                 provider = "ollama"
-                model = $m
-                roles = @("chat", "autocomplete")
+                model    = $m
+                roles    = @("chat", "autocomplete")
             }
         }
     }
 
     $config = @{
-        name = "Local AI Config"
-        version = "1.0.0"
-        schema = "v1"
-        models = $modelsConfig
-        context = @(
+        name            = "Local AI Config"
+        version         = "1.0.0"
+        schema          = "v1"
+        models          = $modelsConfig
+        context         = @(
             @{ provider = "code" },
             @{ provider = "docs" },
             @{ provider = "diff" },
@@ -571,7 +588,7 @@ function Set-ContinueConfig {
         tabAutocomplete = @{
             disable = $false
         }
-        slashCommands = @(
+        slashCommands   = @(
             @{ name = "edit"; description = "Edit selected code" },
             @{ name = "comment"; description = "Add comments to code" },
             @{ name = "share"; description = "Export conversation" },
@@ -608,7 +625,8 @@ function Show-Summary {
             Write-Host "  " -NoNewline
             Write-Host "  $m" -NoNewline -ForegroundColor Green
             Write-Host "  [autocomplete]" -ForegroundColor DarkGray
-        } else {
+        }
+        else {
             Write-Host "  " -NoNewline
             Write-Host "  $m" -NoNewline -ForegroundColor Green
             Write-Host "  [chat, autocomplete]" -ForegroundColor DarkGray
@@ -626,7 +644,8 @@ function Show-Summary {
     $ollamaRunning = Get-Process ollama -ErrorAction SilentlyContinue
     if ($ollamaRunning) {
         Write-Host "Running" -ForegroundColor Green
-    } else {
+    }
+    else {
         Write-Host "Not Running" -ForegroundColor Red
     }
     
@@ -646,7 +665,7 @@ function Open-GitHub {
     Write-Host "  ╔════════════════════════════════════════════════════════╗" -ForegroundColor Cyan
     Write-Host "  ║                                                        ║" -ForegroundColor Cyan
     Write-Host "  ║  " -NoNewline -ForegroundColor Cyan
-    Write-Host "  Thanks for using AI Smart Installer                " -NoNewline -ForegroundColor White
+    Write-Host "  Thanks for using Just One Installer                " -NoNewline -ForegroundColor White
     Write-Host "║" -ForegroundColor Cyan
     Write-Host "  ║  " -NoNewline -ForegroundColor Cyan
     Write-Host "  Developer  :  github.com/moshiurrahmandeap11       " -NoNewline -ForegroundColor White
