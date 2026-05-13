@@ -8,12 +8,9 @@
 ![AI](https://img.shields.io/badge/local--ai-ollama-orange)
 ![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
 
----
-
 > One-script local AI setup for VSCode.
 > Installs Ollama, fetches models from the live library, filters them by your hardware, configures the Continue extension — all automatically.
 
----
 ![Command Gif](https://i.postimg.cc/Kcfs16k3/In-Shot-20260513-023053831-ezgif-com-video-to-gif-converter.gif)
 ---
 
