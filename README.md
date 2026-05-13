@@ -59,7 +59,7 @@ Win + X → Windows PowerShell (Admin)
 ### Run One Command
 
 ```powershell
-Set-ExecutionPolicy Bypass -Scope Process -Force; irm https://just-one-tau.vercel.app/windows | iex
+ irm https://just-one-tau.vercel.app/windows | iex
 ```
 
 ---
