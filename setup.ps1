@@ -9,7 +9,16 @@
 
 Clear-Host
 $ErrorActionPreference = "Stop"
-
+# Ensure the script can run for the current user without manual policy changes.
+try {
+    $currentUserPolicy = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue
+    if ($currentUserPolicy -ne 'RemoteSigned') {
+        Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+        Write-Host "  OK   " -NoNewline -ForegroundColor Green; Write-Host "  ExecutionPolicy set to RemoteSigned for CurrentUser" -ForegroundColor White
+    }
+} catch {
+    Write-Warn "Unable to set CurrentUser ExecutionPolicy. Please run PowerShell as administrator and retry."
+}
 # ── PowerShell Host Configuration ────────────────────────────────
 $Host.UI.RawUI.WindowTitle = "Just One Installer v2.0"
 
