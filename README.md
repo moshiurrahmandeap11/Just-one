@@ -77,7 +77,7 @@ cd Just-one
 
 ![Banner and System Info](https://i.postimg.cc/kXQtgsRz/just-One1.jpg)
 
-![Model Recommendation Table](https://i.postimg.cc/x1jqT22n/just-One2.png)
+![Model Recommendation Table](https://i.postimg.cc/HWc8TLzh/Screenshot-2026-05-13-163251.png)
 
 ---
 
