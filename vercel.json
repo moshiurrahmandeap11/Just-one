@@ -1,0 +1,27 @@
+{
+    "rewrites": [
+        {
+            "source": "/linux",
+            "destination": "/setup.sh"
+        },
+        {
+            "source": "/mac",
+            "destination": "/mac-setup.sh"
+        },
+        {
+            "source": "/windows",
+            "destination": "/setup.ps1"
+        }
+    ],
+    "headers": [
+        {
+            "source": "/(.*)",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "text/plain"
+                }
+            ]
+        }
+    ]
+}
