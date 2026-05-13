@@ -1,4 +1,4 @@
-# AI Smart Installer — v2.0
+# Just One Installer — v2.0
 
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Linux-blue)
