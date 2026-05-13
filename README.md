@@ -104,7 +104,7 @@ cd Just-one
 ### Run the script:
 
 ```bash
-.\install-ai.ps1
+.\setup.ps1
 ```
 
 ---
