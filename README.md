@@ -1,7 +1,9 @@
 # AI Smart Installer — v2.0
 
-![License](https://img.shields.io/badge/license-MIT-green)
+![License](https://img.shields.io/badge/License-MIT-green)
 ![Platform](https://img.shields.io/badge/platform-Linux-blue)
+![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![Platform](https://img.shields.io/badge/platform-MacOS-blue)
 ![VSCode](https://img.shields.io/badge/vscode-Continue%20Ready-007ACC)
 ![AI](https://img.shields.io/badge/local--ai-ollama-orange)
 ![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
@@ -25,43 +27,6 @@ Portfolio: [Moshiur Rahman Deap](https://moshiurrahman.online)
  GitHub: [Click Here](https://github.com/moshiurrahmandeap11)
 
 ---
-
-## Preview
-
-![Banner and System Info](https://i.postimg.cc/kXQtgsRz/just-One1.jpg)
-
-![Model Recommendation Table](https://i.postimg.cc/x1jqT22n/just-One2.png)
-
----
-
-## What It Does
-
-| Step | Action                                                         |
-| ---- | -------------------------------------------------------------- |
-| 1    | Detects your Linux distribution and installs `curl` if missing |
-| 2    | Reads your CPU, RAM, GPU, VRAM and free disk space             |
-| 3    | Installs Ollama via the official installer script              |
-| 4    | Starts the Ollama background server                            |
-| 5    | Verifies VSCode CLI and installs the Continue extension        |
-| 6    | Fetches the full live model list from `ollama.com/library`     |
-| 7    | Filters models by your available memory — no hardcoded lists   |
-| 8    | Lets you pick models interactively from a numbered table       |
-| 9    | Pulls selected models and guarantees the fallback is installed |
-| 10   | Writes a complete `~/.continue/config.yaml`                    |
-| 11   | Opens VSCode in the current directory                          |
-
----
-
-## Requirements
-
-- Linux (any major distribution)
-- Bash 4+
-- `sudo` access (for package installation if `curl` is missing)
-- VSCode with the `code` CLI command enabled
-- Internet connection
-
----
-
 ## Installation
 
 ### Linux
@@ -106,9 +71,41 @@ cd Just-one
 ```bash
 .\setup.ps1
 ```
+---
+
+## Preview
+
+![Banner and System Info](https://i.postimg.cc/kXQtgsRz/just-One1.jpg)
+
+![Model Recommendation Table](https://i.postimg.cc/x1jqT22n/just-One2.png)
 
 ---
 
+## What It Does
+
+| Step | Action                                                         |
+| ---- | -------------------------------------------------------------- |
+| 1    | Detects your Linux distribution and installs `curl` if missing |
+| 2    | Reads your CPU, RAM, GPU, VRAM and free disk space             |
+| 3    | Installs Ollama via the official installer script              |
+| 4    | Starts the Ollama background server                            |
+| 5    | Verifies VSCode CLI and installs the Continue extension        |
+| 6    | Fetches the full live model list from `ollama.com/library`     |
+| 7    | Filters models by your available memory — no hardcoded lists   |
+| 8    | Lets you pick models interactively from a numbered table       |
+| 9    | Pulls selected models and guarantees the fallback is installed |
+| 10   | Writes a complete `~/.continue/config.yaml`                    |
+| 11   | Opens VSCode in the current directory                          |
+
+---
+
+## Requirements
+
+- Linux (any major distribution)
+- Bash 4+
+- `sudo` access (for package installation if `curl` is missing)
+- VSCode with the `code` CLI command enabled
+- Internet connection
 ---
 
 ## Linux Supported Distributions
