@@ -241,6 +241,8 @@ The script detects NVIDIA via `nvidia-smi` and AMD via `rocm-smi`. If neither is
 **moshiurrahmandeap11**
 GitHub — [github.com/moshiurrahmandeap11](https://github.com/moshiurrahmandeap11)
 
+<img src="https://komarev.com/ghpvc/?username=moshiurrahmandeap11&label=Page+Visitors&color=0e75b6&style=for-the-badge" alt="Views" /></div>
+
 ---
 
 ## License
