@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # ──────────────────────────────────────────────────────────────────
-#  AI Smart Installer  |  VSCode + Ollama + Continue  |  v2.0
-#  Author : moshiurrahmandeap11
+#  Just One  |  Local AI Automator  |  v2.5
+#  Linux Version
+#  Author : Moshiur Rahman Deap
+#  Github : https://github.com/moshiurrahmandeap11
+#  Contact: https://linkedin.com/in/moshiurrahmandeap
 #  License: MIT
 # ──────────────────────────────────────────────────────────────────
 
@@ -28,8 +31,6 @@ info()  { echo -e " ${BOLD}${CYAN} -- ${RESET}  $1"; }
 blank() { echo ""; }
 
 # ── Section Header ────────────────────────────────────────────────
-# Draws a pixel-perfect double-line box with a centred title.
-# Width is fixed at 56 chars to align consistently across sections.
 section() {
     local title="$1"
     local width=56
@@ -50,23 +51,29 @@ section() {
 }
 
 # ── Banner ────────────────────────────────────────────────────────
-# Shown once at the very start after clearing the terminal.
 print_banner() {
     echo -e "${BOLD}${CYAN}"
     echo "  ╔════════════════════════════════════════════════════════╗"
     echo "  ║                                                        ║"
-    echo "  ║           AI  SMART  INSTALLER   v2.0                  ║"
-    echo "  ║       VSCode  +  Ollama  +  Continue  Dev              ║"
+    echo "  ║           Just One Installer     v2.5                  ║"
+    echo "  ║       Zero-Config Local AI & Codebase RAG              ║"
+    echo "  ║       Developed By Moshiur Rahman Deap                 ║"
     echo "  ║                                                        ║"
     echo "  ╚════════════════════════════════════════════════════════╝"
     echo -e "${RESET}"
     blank
 }
 
+# ── Global Defaults ───────────────────────────────────────────────
+FALLBACK_MODEL="qwen2.5-coder:1.5b"
+EMBEDDING_MODEL="nomic-embed-text"
+SELECTED=()
+SUCCESSFUL_MODELS=()
+FINAL_MODELS=()
+MODEL_MAP=()
+
 # ─────────────────────────────────────────────────────────────────
 #  STEP 1  |  Ensure curl is available
-#  Detects the Linux distribution and installs curl via the
-#  correct package manager if it is not already present.
 # ─────────────────────────────────────────────────────────────────
 
 ensure_curl() {
@@ -100,12 +107,14 @@ ensure_curl() {
         opensuse*|sles)
             sudo zypper install -y curl ;;
         alpine)
-            sudo apk add --no-cache curl ;;
+            sudo apk add curl ;;
         void)
             sudo xbps-install -Sy curl ;;
         *)
-            error "Unknown distribution: ${DISTRO}  --  install curl manually"
-            exit 1 ;;
+            error "Unsupported distribution: ${DISTRO}"
+            error "Please install curl manually and re-run this script."
+            exit 1
+            ;;
     esac
 
     log "curl installed successfully"
@@ -113,40 +122,36 @@ ensure_curl() {
 
 # ─────────────────────────────────────────────────────────────────
 #  STEP 2  |  Collect system hardware information
-#  Reads CPU model and core count, total RAM, GPU name and VRAM.
-#  NVIDIA detection uses nvidia-smi; AMD uses rocm-smi.
 # ─────────────────────────────────────────────────────────────────
 
 detect_system() {
     section "System Information"
 
-    RAM_GB=$(free -g 2>/dev/null | awk '/Mem:/ {print $2}')
-    RAM_MB=$(free -m 2>/dev/null | awk '/Mem:/ {print $2}')
-    [ -z "$RAM_GB" ] && RAM_GB=4
-    [ -z "$RAM_MB" ] && RAM_MB=4096
+    CPU_CORES=$(nproc 2>/dev/null || grep -c ^processor /proc/cpuinfo 2>/dev/null || echo 2)
+    CPU_MODEL=$(grep -m1 "model name" /proc/cpuinfo 2>/dev/null \
+                | cut -d: -f2 \
+                | sed 's/^[ \t]*//;s/[ \t]*$//' \
+                || echo "Unknown CPU")
 
-    CPU_CORES=$(nproc 2>/dev/null || echo 2)
-    CPU_MODEL=$(grep 'model name' /proc/cpuinfo 2>/dev/null \
-                | head -1 | cut -d: -f2 | xargs || echo "Unknown CPU")
+    RAM_KB=$(grep MemTotal /proc/meminfo 2>/dev/null | awk '{print $2}' || echo 0)
+    RAM_MB=$(( RAM_KB / 1024 ))
+    RAM_GB=$(( (RAM_MB + 512) / 1024 ))
 
     GPU_VRAM=0
     GPU_NAME="Not detected"
 
     if command -v nvidia-smi &>/dev/null; then
-        GPU_NAME=$(nvidia-smi --query-gpu=name \
-                   --format=csv,noheader 2>/dev/null | head -1 || echo "NVIDIA GPU")
-        GPU_VRAM=$(nvidia-smi --query-gpu=memory.total \
-                   --format=csv,noheader,nounits 2>/dev/null \
-                   | head -1 | awk '{print int($1/1024)}' || echo 0)
+        GPU_NAME=$(nvidia-smi --query-gpu=name --format=csv,noheader 2>/dev/null | head -1 | sed 's/^[ \t]*//')
+        local vram_raw
+        vram_raw=$(nvidia-smi --query-gpu=memory.total --format=csv,noheader,nounits 2>/dev/null | head -1 | tr -d ' ')
+        GPU_VRAM=$(( (vram_raw + 512) / 1024 ))
     elif command -v rocm-smi &>/dev/null; then
-        GPU_NAME="AMD ROCm GPU"
-        GPU_VRAM=$(rocm-smi --showmeminfo vram 2>/dev/null \
-                   | grep -oP '\d+' | head -1 \
-                   | awk '{print int($1/1024)}' || echo 0)
+        GPU_NAME=$(rocm-smi --showproductname 2>/dev/null | awk -F: '/Card series/{print $2}' | head -1 | sed 's/^[ \t]*//')
+        GPU_VRAM=8
+        [ -z "$GPU_NAME" ] && GPU_NAME="AMD ROCm GPU"
     fi
 
-    DISK_FREE=$(df -BG "$HOME" 2>/dev/null \
-                | awk 'NR==2 {gsub("G",""); print $4}' || echo 20)
+    DISK_FREE=$(df -BG "$HOME" 2>/dev/null | awk 'NR==2 {gsub("G",""); print $4}' || echo 20)
 
     echo -e "  ${BOLD}${WHITE}CPU        ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${CPU_MODEL}${RESET}  ${DIM}(${CPU_CORES} cores)${RESET}"
     echo -e "  ${BOLD}${WHITE}RAM        ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${RAM_GB} GB${RESET}  ${DIM}(${RAM_MB} MB)${RESET}"
@@ -154,12 +159,18 @@ detect_system() {
     echo -e "  ${BOLD}${WHITE}VRAM       ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${GPU_VRAM} GB${RESET}"
     echo -e "  ${BOLD}${WHITE}Disk Free  ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${DISK_FREE} GB${RESET}"
     blank
+
+    if [ "$GPU_VRAM" -ge 8 ]; then
+        EFFECTIVE_MEM=$GPU_VRAM
+        MEM_SOURCE="GPU VRAM"
+    else
+        EFFECTIVE_MEM=$RAM_GB
+        MEM_SOURCE="System RAM"
+    fi
 }
 
 # ─────────────────────────────────────────────────────────────────
 #  STEP 3  |  Install and start Ollama
-#  Downloads the official install script via curl when Ollama is
-#  absent, then launches the inference server in the background.
 # ─────────────────────────────────────────────────────────────────
 
 install_ollama() {
@@ -170,313 +181,287 @@ install_ollama() {
         return
     fi
 
-    warn "Downloading Ollama installer via curl..."
+    warn "Downloading and installing Ollama..."
     curl -fsSL https://ollama.com/install.sh | sh
     log "Ollama installed successfully"
 }
 
 start_ollama() {
+    export OLLAMA_FLASH_ATTENTION=1
+    export OLLAMA_KEEP_ALIVE="24h"
+
+    if systemctl is-active --quiet ollama 2>/dev/null; then
+        log "Ollama systemd service is active"
+        return
+    fi
+
     if pgrep -x ollama &>/dev/null; then
-        log "Ollama server is already running"
+        log "Ollama server process is running"
         return
     fi
 
     warn "Starting Ollama background server..."
-    ollama serve > /dev/null 2>&1 &
-    sleep 5
+    if command -v systemctl &>/dev/null && systemctl list-unit-files | grep -q "ollama.service"; then
+        sudo systemctl start ollama
+    else
+        ollama serve > /dev/null 2>&1 &
+    fi
+
+    sleep 4
     log "Ollama server started"
 }
 
 # ─────────────────────────────────────────────────────────────────
-#  STEP 4  |  VSCode + Continue extension
-#  Checks that the VSCode CLI is on PATH, then installs the
-#  Continue AI extension if it is not already present.
+#  STEP 4  |  Multi-Editor Detection & Continue Extension
 # ─────────────────────────────────────────────────────────────────
 
-check_vscode() {
-    section "VSCode  +  Continue Extension"
+detect_editor() {
+    section "Checking AI Code Editor"
 
-    if ! command -v code &>/dev/null; then
-        error "VSCode CLI not found  --  install VSCode and enable the 'code' command"
-        echo -e "  ${DIM}https://code.visualstudio.com/download${RESET}"
-        exit 1
+    if command -v code &>/dev/null; then
+        EDITOR_NAME="VS Code"
+        EDITOR_CMD="code"
+    elif command -v cursor &>/dev/null; then
+        EDITOR_NAME="Cursor"
+        EDITOR_CMD="cursor"
+    elif command -v code-insiders &>/dev/null; then
+        EDITOR_NAME="VS Code Insiders"
+        EDITOR_CMD="code-insiders"
+    elif command -v codium &>/dev/null; then
+        EDITOR_NAME="VSCodium"
+        EDITOR_CMD="codium"
+    else
+        EDITOR_NAME="VS Code"
+        EDITOR_CMD="code"
+        warn "No supported code editor CLI found on PATH (checked code, cursor, code-insiders, codium)."
+        info "Please install VS Code from https://code.visualstudio.com"
     fi
 
-    log "VSCode CLI found"
+    log "${EDITOR_NAME} CLI detected (${EDITOR_CMD})"
 }
 
 install_continue() {
-    if code --list-extensions 2>/dev/null | grep -q "Continue.continue"; then
-        log "Continue extension is already installed"
+    if ! command -v "$EDITOR_CMD" &>/dev/null; then
+        warn "Skipping auto-extension install. You can install Continue manually in your editor."
         return
     fi
 
-    warn "Installing Continue extension..."
-    code --install-extension Continue.continue
+    local extensions
+    extensions=$("$EDITOR_CMD" --list-extensions 2>/dev/null || true)
+    if echo "$extensions" | grep -q "Continue.continue"; then
+        log "Continue extension is already installed in ${EDITOR_NAME}"
+        return
+    fi
+
+    warn "Installing Continue extension in ${EDITOR_NAME}..."
+    "$EDITOR_CMD" --install-extension Continue.continue
     log "Continue extension installed"
 }
 
 # ─────────────────────────────────────────────────────────────────
 #  STEP 5  |  Fetch model list from Ollama library
-#  A single curl request scrapes all model slugs from the library
-#  page.  If the request fails, a curated built-in list is used.
 # ─────────────────────────────────────────────────────────────────
 
 fetch_ollama_models() {
     section "Fetching Ollama Model Library"
-
     info "Connecting to ollama.com/library..."
-    OLLAMA_MODELS=$(curl -s https://ollama.com/library \
-                    | grep -oP 'href="/library/\K[^"]+' \
-                    | sort -u)
 
-    if [ -z "$OLLAMA_MODELS" ]; then
-        warn "Could not reach ollama.com  --  using built-in model list"
-        OLLAMA_MODELS="tinyllama phi gemma mistral llama3 codellama deepseek-r1 qwen2.5-coder llava"
+    local raw_html
+    raw_html=$(curl -s --max-time 8 "https://ollama.com/library" 2>/dev/null || true)
+
+    local models
+    models=$(echo "$raw_html" | sed -n 's/.*href="\/library\/\([a-zA-Z0-9_.:-]*\)".*/\1/p' | sort -u)
+
+    if [ -z "$models" ]; then
+        warn "Could not reach ollama.com -- using built-in model list"
+        OLLAMA_MODELS=(
+            "deepseek-r1" "qwen2.5-coder" "llama3.2" "llama3.1" "mistral"
+            "codellama" "phi4" "gemma2" "llava"
+        )
+    else
+        OLLAMA_MODELS=()
+        while IFS= read -r line; do
+            [ -n "$line" ] && OLLAMA_MODELS+=("$line")
+        done <<< "$models"
     fi
 
-    local count
-    count=$(echo "$OLLAMA_MODELS" | wc -l)
-    log "${count} models fetched"
+    log "Loaded ${#OLLAMA_MODELS[@]} model families"
 }
-
-# ─────────────────────────────────────────────────────────────────
-#  MODEL SIZE ESTIMATOR  |  Zero network calls, runs instantly
-#
-#  Parses the parameter count embedded in the model name
-#  (e.g. "7b", "70b", "2.5b") and converts it to an estimated
-#  memory footprint using the standard 4-bit quantisation rule:
-#
-#    size_GB  =  ceil( params_B * 0.55 )    minimum 1 GB
-#
-#  Models with no numeric size tag default to 3 GB.
-# ─────────────────────────────────────────────────────────────────
 
 get_model_size_gb() {
     local model="$1"
-    local raw int_part params size
+    case "$model" in
+        *14b*|*13b*) echo 8 ;;
+        *7b*|*8b*)   echo 5 ;;
+        *3b*|*3.8b*) echo 2 ;;
+        *1.5b*|*1b*) echo 1 ;;
+        *llama3.2*)  echo 2 ;;
+        *coder*)     echo 5 ;;
+        *deepseek*)  echo 5 ;;
+        *)           echo 4 ;;
+    esac
+}
 
-    raw=$(echo "$model" | grep -oiP '[\d]+\.?[\d]*(?=b)' | tail -1)
+get_model_tag() {
+    local model="$1"
+    case "$model" in
+        *coder*|*code*|*starcoder*) echo "Coder" ;;
+        *deepseek-r1*|*qwq*)       echo "Reasoning" ;;
+        *llava*|*vision*)          echo "Vision" ;;
+        *)                         echo "General" ;;
+    esac
+}
 
-    if [[ -z "$raw" ]]; then
-        echo 3
+# ─────────────────────────────────────────────────────────────────
+#  STEP 6  |  Selection: Quick Preset vs Custom
+# ─────────────────────────────────────────────────────────────────
+
+select_mode_and_models() {
+    section "Model Setup Mode"
+
+    local max_model_size=$(( (EFFECTIVE_MEM * 65) / 100 ))
+    [ "$max_model_size" -lt 1 ] && max_model_size=1
+
+    echo -e "  ${BOLD}${WHITE}Memory Source    ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${EFFECTIVE_MEM} GB (${MEM_SOURCE})${RESET}"
+    echo -e "  ${BOLD}${WHITE}Max Model Budget ${RESET}${DIM}|${RESET}  ${BOLD}${YELLOW}${max_model_size} GB (Safe 65% limit)${RESET}"
+    blank
+
+    echo -e "  ${BOLD}${WHITE}Choose your setup preference:${RESET}"
+    blank
+    echo -e "  ${BOLD}${CYAN}[1] ⚡ Quick Recommended Setup (1-Click)${RESET}"
+    echo -e "      ${DIM}Auto-configures best Chat/Coding model + Fast Autocomplete + Codebase RAG${RESET}"
+    blank
+    echo -e "  ${BOLD}${YELLOW}[2] 🛠️  Custom Model Selection${RESET}"
+    echo -e "      ${DIM}Browse dynamic table and pick individual models by number${RESET}"
+    blank
+
+    echo -e "  ${BOLD}${WHITE}Your choice [1/2, default: 1]: ${RESET}\c"
+    read -r mode_choice
+
+    if [ -z "$mode_choice" ] || [ "$mode_choice" = "1" ]; then
+        blank
+        log "Applying Quick Recommended Preset for ${EFFECTIVE_MEM} GB ${MEM_SOURCE}..."
+        if [ "$EFFECTIVE_MEM" -ge 24 ]; then
+            SELECTED=("qwen2.5-coder:14b" "deepseek-r1:8b")
+        elif [ "$EFFECTIVE_MEM" -ge 16 ]; then
+            SELECTED=("qwen2.5-coder:7b" "deepseek-r1:7b")
+        elif [ "$EFFECTIVE_MEM" -ge 8 ]; then
+            SELECTED=("qwen2.5-coder:7b")
+        else
+            SELECTED=("qwen2.5-coder:3b")
+        fi
+        info "Auto-selected models: ${SELECTED[*]}"
         return
     fi
 
-    int_part=$(echo "$raw" | cut -d. -f1)
-    [ -z "$int_part" ] && int_part=1
-    [ "$int_part" -eq 0 ] && int_part=1
-    params=$int_part
+    # Custom Table Selection
+    section "Available Models"
+    printf "  ${BOLD}${WHITE}%-4s  %-28s  %-9s  %s${RESET}\n" "No." "Model" "Size" "Category"
+    printf "  ${DIM}%-4s  %-28s  %-9s  %s${RESET}\n" "----" "----------------------------" "---------" "--------"
 
-    # Integer arithmetic: (params * 55 + 99) / 100  =  ceil(params * 0.55)
-    size=$(( (params * 55 + 99) / 100 ))
-    [ "$size" -lt 1 ] && size=1
-
-    echo "$size"
-}
-
-# ─────────────────────────────────────────────────────────────────
-#  STEP 6  |  Recommend compatible models based on hardware
-#
-#  Memory priority:
-#    GPU VRAM >= 8 GB  ->  use VRAM  (GPU-accelerated inference)
-#    otherwise         ->  use system RAM
-#
-#  Only models whose estimated size fits within 65 % of the
-#  effective memory budget are displayed, preventing OOM crashes.
-# ─────────────────────────────────────────────────────────────────
-
-recommend_models() {
-    section "Model Recommendation"
-
-    # Choose the most capable memory pool available
-    if [ "$GPU_VRAM" -ge 8 ] 2>/dev/null; then
-        EFFECTIVE_MEM=$GPU_VRAM
-        MEM_SOURCE="GPU VRAM"
-    else
-        EFFECTIVE_MEM=$RAM_GB
-        MEM_SOURCE="System RAM"
-    fi
-
-    # 65 % headroom keeps the OS and other processes stable
-    MAX_MODEL_SIZE=$(echo "$EFFECTIVE_MEM * 0.65" | bc 2>/dev/null | cut -d. -f1)
-    [ -z "$MAX_MODEL_SIZE" ] && MAX_MODEL_SIZE=$(( EFFECTIVE_MEM * 65 / 100 ))
-    [ "$MAX_MODEL_SIZE" -lt 1 ] && MAX_MODEL_SIZE=1
-
-    echo -e "  ${BOLD}${WHITE}Memory Source    ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${EFFECTIVE_MEM} GB  (${MEM_SOURCE})${RESET}"
-    echo -e "  ${BOLD}${WHITE}Max Model Size   ${RESET}${DIM}|${RESET}  ${BOLD}${YELLOW}${MAX_MODEL_SIZE} GB${RESET}"
-    blank
-
-    # The fallback is always installed regardless of user selection
-    FALLBACK_MODEL="qwen2.5-coder:1.5b"
-
-    declare -a DISPLAY_NAMES DISPLAY_SIZES DISPLAY_TAGS
-    declare -gA MODEL_MAP
-    local i=1
-
-    info "Filtering compatible models..."
-    blank
-
-    while read -r model; do
-        [ -z "$model" ] && continue
-
-        local SIZE
-        SIZE=$(get_model_size_gb "$model")
-
-        if [ "$SIZE" -le "$MAX_MODEL_SIZE" ]; then
-            # Visual tier label based on footprint
-            if   [ "$SIZE" -le 2 ]; then tag="${GREEN}lightweight${RESET}"
-            elif [ "$SIZE" -le 6 ]; then tag="${YELLOW}balanced${RESET}"
-            else                          tag="${RED}heavy${RESET}"
-            fi
-
-            DISPLAY_NAMES[$i]="$model"
-            DISPLAY_SIZES[$i]="$SIZE"
-            DISPLAY_TAGS[$i]="$tag"
-            MODEL_MAP[$i]="$model"
-            (( i++ ))
+    local num=1
+    MODEL_MAP=()
+    for model in "${OLLAMA_MODELS[@]}"; do
+        local size
+        size=$(get_model_size_gb "$model")
+        if [ "$size" -le "$max_model_size" ]; then
+            local tag
+            tag=$(get_model_tag "$model")
+            MODEL_MAP[$num]="$model"
+            printf "  ${BOLD}${CYAN}%2d)${RESET}  %-28s  ~%-7s  ${YELLOW}[%s]${RESET}\n" "$num" "$model" "${size} GB" "$tag"
+            num=$(( num + 1 ))
         fi
-
-    done <<< "$OLLAMA_MODELS"
-
-    TOTAL_AVAILABLE=$(( i - 1 ))
-
-    if [ "$TOTAL_AVAILABLE" -eq 0 ]; then
-        warn "No models fit within your memory budget  --  only fallback will be used"
-    fi
-
-    # Render the selection table
-    echo -e "  ${BOLD}${WHITE}$(printf '%-5s  %-32s  %-9s  %s' 'No.' 'Model' 'Size' 'Profile')${RESET}"
-    echo -e "  ${DIM}$(printf '%-5s  %-32s  %-9s  %s' '-----' '--------------------------------' '---------' '----------')${RESET}"
-
-    for j in $(seq 1 "$TOTAL_AVAILABLE"); do
-        printf "  ${BOLD}${CYAN}%-5s${RESET}  ${BOLD}%-32s${RESET}  ${DIM}%-9s${RESET}  " \
-            "${j})" "${DISPLAY_NAMES[$j]}" "~${DISPLAY_SIZES[$j]} GB"
-        echo -e "${BOLD}${DISPLAY_TAGS[$j]}"
     done
 
     blank
-    echo -e "  ${BOLD}${WHITE}Default Fallback   ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${FALLBACK_MODEL}${RESET}  ${DIM}(autocomplete only)${RESET}"
+    echo -e "  ${DIM}Select models by entering row numbers separated by commas (e.g. 1,3)${RESET}"
+    echo -e "  ${DIM}Press Enter to skip manual models and use the default coder fallback.${RESET}"
     blank
-
-    # List models already present in the local Ollama registry
-    echo -e "  ${BOLD}${WHITE}Already Installed:${RESET}"
-    local installed
-    installed=$(ollama list 2>/dev/null | awk 'NR>1 {print "    " $1}' || true)
-    if [ -z "$installed" ]; then
-        echo -e "  ${DIM}    None${RESET}"
-    else
-        echo -e "${BOLD}${GREEN}${installed}${RESET}"
-    fi
-    blank
-}
-
-# ─────────────────────────────────────────────────────────────────
-#  STEP 7  |  Interactive model selection
-#  The user enters comma-separated row numbers from the table.
-#  Pressing Enter without input activates fallback-only mode.
-# ─────────────────────────────────────────────────────────────────
-
-select_models() {
-    echo -e "  ${BOLD}${WHITE}Select models to install:${RESET}"
-    echo -e "  ${DIM}Enter row numbers separated by commas  (example:  1,3,5)${RESET}"
-    echo -e "  ${DIM}Press Enter to skip and use the fallback model only${RESET}"
-    blank
-    echo -ne "  ${BOLD}${CYAN}Your choice:  ${RESET}"
+    echo -e "  ${BOLD}${CYAN}Your choice: ${RESET}\c"
     read -r input
 
-    SELECTED=()
-
-    if [[ -z "$input" || "$input" == "0" ]]; then
-        log "No selection  --  fallback model will be used"
-        return
+    if [ -n "$input" ] && [ "$input" != "0" ]; then
+        IFS=',' read -ra numbers <<< "$input"
+        for n in "${numbers[@]}"; do
+            n=$(echo "$n" | xargs)
+            if [ -n "${MODEL_MAP[$n]}" ]; then
+                SELECTED+=("${MODEL_MAP[$n]}")
+            else
+                warn "Invalid entry: $n -- skipped"
+            fi
+        done
     fi
-
-    IFS=',' read -ra arr <<< "$input"
-    for x in "${arr[@]}"; do
-        x=$(echo "$x" | xargs)
-        if [[ -n "${MODEL_MAP[$x]}" ]]; then
-            SELECTED+=("${MODEL_MAP[$x]}")
-        else
-            warn "Invalid entry: ${x}  --  skipped"
-        fi
-    done
 }
 
 # ─────────────────────────────────────────────────────────────────
-#  STEP 8  |  Pull selected models from Ollama registry
-#  Models already present in the local store are skipped.
+#  STEP 7  |  Install All Models (Selected + Fallback + Embedding)
 # ─────────────────────────────────────────────────────────────────
 
-install_models() {
-    section "Downloading Selected Models"
+install_all_models() {
+    section "Downloading AI Models"
 
-    if [ "${#SELECTED[@]}" -eq 0 ]; then
-        log "No additional models to download"
-        return
+    # 1. Pull Selected Models
+    if [ ${#SELECTED[@]} -gt 0 ]; then
+        for model in "${SELECTED[@]}"; do
+            if ollama list 2>/dev/null | grep -q "^$model\b"; then
+                log "$model -- already installed"
+                SUCCESSFUL_MODELS+=("$model")
+            else
+                warn "Pulling $model ..."
+                if ollama pull "$model"; then
+                    log "$model -- installed"
+                    SUCCESSFUL_MODELS+=("$model")
+                else
+                    warn "Failed to pull $model -- skipped"
+                fi
+            fi
+        done
     fi
 
-    for m in "${SELECTED[@]}"; do
-        if ollama list 2>/dev/null | grep -q "^${m}"; then
-            log "${m}  --  already installed"
-        else
-            warn "Pulling  ${m} ..."
-            ollama pull "$m"
-            log "${m}  --  installed"
-        fi
-    done
-}
-
-# ─────────────────────────────────────────────────────────────────
-#  STEP 9  |  Guarantee the fallback model is present
-#  qwen2.5-coder:1.5b is always available so that tab-autocomplete
-#  works even when the user selects no additional models.
-# ─────────────────────────────────────────────────────────────────
-
-ensure_fallback() {
-    section "Fallback Model"
-
-    [ -z "$FALLBACK_MODEL" ] && FALLBACK_MODEL="qwen2.5-coder:1.5b"
-
-    if ollama list 2>/dev/null | grep -q "^${FALLBACK_MODEL}"; then
-        log "${FALLBACK_MODEL}  --  already installed"
+    # 2. Guarantee Tab-Autocomplete Fallback Model
+    blank
+    info "Checking Tab-Autocomplete model (${FALLBACK_MODEL})..."
+    if ollama list 2>/dev/null | grep -q "^${FALLBACK_MODEL}\b"; then
+        log "${FALLBACK_MODEL} -- already installed"
     else
-        warn "Installing fallback  --  ${FALLBACK_MODEL} ..."
-        ollama pull "$FALLBACK_MODEL"
-        log "${FALLBACK_MODEL}  --  installed"
+        warn "Installing tab-autocomplete fallback -- ${FALLBACK_MODEL} ..."
+        ollama pull "${FALLBACK_MODEL}"
+        log "${FALLBACK_MODEL} -- installed"
+    fi
+
+    # 3. Pull Codebase Embedding Model
+    blank
+    info "Checking Codebase RAG Embedding model (${EMBEDDING_MODEL})..."
+    if ollama list 2>/dev/null | grep -q "^${EMBEDDING_MODEL}\b"; then
+        log "${EMBEDDING_MODEL} -- already installed"
+    else
+        warn "Installing codebase embedding model -- ${EMBEDDING_MODEL} (274 MB) ..."
+        ollama pull "${EMBEDDING_MODEL}" || warn "Could not pull embedding model"
+        log "${EMBEDDING_MODEL} -- installed"
+    fi
+
+    # Build final list
+    FINAL_MODELS=()
+    if [ ${#SUCCESSFUL_MODELS[@]} -gt 0 ]; then
+        FINAL_MODELS=("${SUCCESSFUL_MODELS[@]}")
+    else
+        FINAL_MODELS=("$FALLBACK_MODEL")
     fi
 }
 
 # ─────────────────────────────────────────────────────────────────
-#  Assemble the final ordered model list for config generation.
-#  Selected models appear first; the fallback is always last.
+#  STEP 8  |  Write Continue Configuration & Rules (Pure YAML)
 # ─────────────────────────────────────────────────────────────────
 
-build_final_models() {
-    FINAL_MODELS=()
-    [ "${#SELECTED[@]}" -gt 0 ] && FINAL_MODELS=("${SELECTED[@]}")
-
-    local found=0
-    for m in "${FINAL_MODELS[@]}"; do
-        [ "$m" == "$FALLBACK_MODEL" ] && found=1
-    done
-    [ "$found" -eq 0 ] && FINAL_MODELS+=("$FALLBACK_MODEL")
-}
-
-# ─────────────────────────────────────────────────────────────────
-#  STEP 10  |  Write the Continue extension configuration
-#
-#  Role assignment strategy:
-#    fallback model   ->  roles: [autocomplete]          (small, fast)
-#    all other models ->  roles: [chat, autocomplete]    (full capability)
-# ─────────────────────────────────────────────────────────────────
-
-setup_continue() {
+set_continue_config() {
     section "Writing Continue Configuration"
 
-    mkdir -p ~/.continue
+    local config_dir="$HOME/.continue"
+    mkdir -p "$config_dir"
+    local config_file="$config_dir/config.yaml"
+    local rules_file="$config_dir/.continuerules"
 
-    cat > ~/.continue/config.yaml <<EOF
+    cat > "$config_file" << EOF
 name: Local AI Config
 version: 1.0.0
 schema: v1
@@ -484,25 +469,47 @@ schema: v1
 models:
 EOF
 
-    for m in "${FINAL_MODELS[@]}"; do
-        if [ "$m" == "$FALLBACK_MODEL" ]; then
-cat >> ~/.continue/config.yaml <<EOF
-  - name: $m
+    local has_fallback=false
+    for model in "${FINAL_MODELS[@]}"; do
+        if [ "$model" = "$FALLBACK_MODEL" ]; then
+            has_fallback=true
+            cat >> "$config_file" << EOF
+  - name: $model
     provider: ollama
-    model: $m
+    model: $model
     roles: [autocomplete]
+
 EOF
         else
-cat >> ~/.continue/config.yaml <<EOF
-  - name: $m
+            cat >> "$config_file" << EOF
+  - name: $model
     provider: ollama
-    model: $m
-    roles: [chat, autocomplete]
+    model: $model
+    roles: [chat, edit]
+
 EOF
         fi
     done
 
-cat >> ~/.continue/config.yaml <<EOF
+    if [ "$has_fallback" = false ]; then
+        cat >> "$config_file" << EOF
+  - name: $FALLBACK_MODEL
+    provider: ollama
+    model: $FALLBACK_MODEL
+    roles: [autocomplete]
+
+EOF
+    fi
+
+    cat >> "$config_file" << EOF
+embeddingsProvider:
+  provider: ollama
+  model: $EMBEDDING_MODEL
+
+tabAutocompleteModel:
+  title: Tab Autocomplete
+  provider: ollama
+  model: $FALLBACK_MODEL
 
 context:
   - provider: code
@@ -519,60 +526,70 @@ tabAutocomplete:
 slashCommands:
   - name: edit
     description: Edit selected code
+  - name: test
+    description: Generate unit tests for selected code
+  - name: refactor
+    description: Refactor code for cleanliness, performance, and best practices
+  - name: fix
+    description: Detect bugs, syntax errors, and security issues
+  - name: explain
+    description: Explain the highlighted code in detail
   - name: comment
-    description: Add comments to code
+    description: Add comprehensive docstrings and comments
   - name: share
     description: Export conversation
   - name: cmd
-    description: Generate a shell command
+    description: Generate shell command
 EOF
 
-    log "Config written  --  ~/.continue/config.yaml"
+    log "Config written -- $config_file"
+
+    cat > "$rules_file" << 'EOF'
+# Local AI Development Rules
+- Write clean, modular, modern, and well-typed code.
+- Always include error handling and handle edge cases gracefully.
+- Follow idioms and conventions of the target programming language.
+- Do not leave unfinished placeholder comments like '// TODO' without implementation.
+EOF
+    log "Developer rules written -- $rules_file"
 }
 
 # ─────────────────────────────────────────────────────────────────
-#  STEP 11  |  Launch VSCode in the current directory
+#  STEP 9  |  Launch Editor & Summary
 # ─────────────────────────────────────────────────────────────────
 
-open_vscode() {
-    section "Launching VSCode"
-    warn "Opening VSCode..."
-    code . &
-    sleep 2
-    log "VSCode launched"
+open_editor() {
+    section "Launching Editor"
+    if command -v "$EDITOR_CMD" &>/dev/null; then
+        warn "Opening ${EDITOR_NAME}..."
+        "$EDITOR_CMD" . &
+        sleep 2
+        log "${EDITOR_NAME} launched"
+    else
+        info "Open ${EDITOR_NAME} manually."
+    fi
 }
-
-# ─────────────────────────────────────────────────────────────────
-#  STEP 12  |  Print installation summary
-# ─────────────────────────────────────────────────────────────────
 
 print_summary() {
     section "Setup Complete"
 
     echo -e "  ${BOLD}${WHITE}Configured Models:${RESET}"
     for m in "${FINAL_MODELS[@]}"; do
-        if [ "$m" == "$FALLBACK_MODEL" ]; then
-            echo -e "  ${BOLD}${GREEN}  ${m}${RESET}  ${DIM}[autocomplete]${RESET}"
-        else
-            echo -e "  ${BOLD}${GREEN}  ${m}${RESET}  ${DIM}[chat, autocomplete]${RESET}"
-        fi
+        echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${m}${RESET}  ${DIM}[chat, edit]${RESET}"
     done
+    echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${FALLBACK_MODEL}${RESET}  ${DIM}[tab-autocomplete]${RESET}"
+    echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${EMBEDDING_MODEL}${RESET}  ${DIM}[@codebase RAG]${RESET}"
 
     blank
-    echo -e "  ${BOLD}${WHITE}Config File    ${RESET}${DIM}|${RESET}  ${DIM}~/.continue/config.yaml${RESET}"
+    echo -e "  ${BOLD}${WHITE}Editor         ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${EDITOR_NAME}${RESET}"
+    echo -e "  ${BOLD}${WHITE}Config File    ${RESET}${DIM}|${RESET}  ${DIM}$HOME/.continue/config.yaml${RESET}"
     echo -e "  ${BOLD}${WHITE}Ollama Status  ${RESET}${DIM}|${RESET}  $(pgrep -x ollama &>/dev/null \
               && echo -e "${BOLD}${GREEN}Running${RESET}" \
               || echo -e "${BOLD}${RED}Not Running${RESET}")"
     blank
-    echo -e "  ${BOLD}${YELLOW}Open VSCode  ->  Continue panel  ->  Start coding with AI${RESET}"
+    echo -e "  ${BOLD}${YELLOW}Open your editor -> Click Continue icon on sidebar -> Start coding with AI!${RESET}"
     blank
 }
-
-# ─────────────────────────────────────────────────────────────────
-#  STEP 13  |  Open the developer GitHub profile in the browser
-#  xdg-open is the standard Linux browser launcher.
-#  Falls back gracefully if no launcher is found.
-# ─────────────────────────────────────────────────────────────────
 
 open_github() {
     local url="https://github.com/moshiurrahmandeap11"
@@ -580,7 +597,7 @@ open_github() {
     blank
     echo -e "${BOLD}${CYAN}  ╔════════════════════════════════════════════════════════╗${RESET}"
     echo -e "${BOLD}${CYAN}  ║                                                        ║${RESET}"
-    echo -e "${BOLD}${CYAN}  ║  ${WHITE}  Thanks for using AI Smart Installer                ${CYAN}║${RESET}"
+    echo -e "${BOLD}${CYAN}  ║  ${WHITE}  Thanks for using Just One Installer                ${CYAN}║${RESET}"
     echo -e "${BOLD}${CYAN}  ║  ${WHITE}  Developer  :  github.com/moshiurrahmandeap11       ${CYAN}║${RESET}"
     echo -e "${BOLD}${CYAN}  ║                                                        ║${RESET}"
     echo -e "${BOLD}${CYAN}  ╚════════════════════════════════════════════════════════╝${RESET}"
@@ -590,32 +607,24 @@ open_github() {
         xdg-open "$url" 2>/dev/null &
     elif command -v open &>/dev/null; then
         open "$url" 2>/dev/null &
-    else
-        warn "No browser launcher found  --  visit manually:  ${url}"
     fi
 }
 
 # ─────────────────────────────────────────────────────────────────
-#  ENTRY POINT  |  Run all installer steps in sequence
+#  ENTRY POINT
 # ─────────────────────────────────────────────────────────────────
 
-# all installer steps in sequence
-
 print_banner
-
 ensure_curl
 detect_system
 install_ollama
 start_ollama
-check_vscode
+detect_editor
 install_continue
 fetch_ollama_models
-recommend_models
-select_models
-install_models
-ensure_fallback
-build_final_models
-setup_continue
-open_vscode
+select_mode_and_models
+install_all_models
+set_continue_config
+open_editor
 print_summary
 open_github

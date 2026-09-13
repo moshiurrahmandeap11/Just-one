@@ -1,17 +1,19 @@
-# Just One Installer — v2.0
+# Just One Installer — v2.5
 
 ![License](https://img.shields.io/badge/License-MIT-green)
-![Platform](https://img.shields.io/badge/platform-Linux-blue)
-![Platform](https://img.shields.io/badge/platform-Windows-blue)
-![Platform](https://img.shields.io/badge/platform-MacOS-blue)
-![VSCode](https://img.shields.io/badge/vscode-Continue%20Ready-007ACC)
-![AI](https://img.shields.io/badge/local--ai-ollama-orange)
+![Platform](https://img.shields.io/badge/platform-Linux%20|%20macOS%20|%20Windows-blue)
+![Editors](https://img.shields.io/badge/editors-VSCode%20|%20Cursor%20|%20VSCodium-007ACC)
+![AI](https://img.shields.io/badge/local--ai-ollama%20+%20continue-orange)
+![RAG](https://img.shields.io/badge/codebase--rag-nomic--embed--text-purple)
 ![Status](https://img.shields.io/badge/status-production--ready-brightgreen)
 
-> One-script local AI setup for VSCode.
-> Installs Ollama, fetches models from the live library, filters them by your hardware, configures the Continue extension — all automatically.
+> **One-command zero-config local AI setup for your code editor.**  
+> Installs Ollama, fetches models, filters them safely by your hardware, sets up Codebase RAG embeddings, and configures the Continue extension across **VS Code, Cursor, and VSCodium** — completely automatically.
+
+🌐 **Live Web Landing Page & Hardware Calculator:** [https://just-one-tau.vercel.app/](https://just-one-tau.vercel.app/)
 
 ![Command Gif](https://i.postimg.cc/Kcfs16k3/In-Shot-20260513-023053831-ezgif-com-video-to-gif-converter.gif)
+
 ---
 
 ## Author
@@ -20,22 +22,25 @@
 
 > Full-stack Developer | AI Automation Builder
 
-Portfolio: [Moshiur Rahman Deap](https://moshiurrahman.online)  
- GitHub: [Click Here](https://github.com/moshiurrahmandeap11)
+- **Portfolio:** [moshiurrahman.online](https://moshiurrahman.online)  
+- **GitHub:** [github.com/moshiurrahmandeap11](https://github.com/moshiurrahmandeap11)
+- **LinkedIn:** [linkedin.com/in/moshiurrahmandeap](https://linkedin.com/in/moshiurrahmandeap)
 
 ---
 
-# Installation
+## One-Line Installation
 
-## Linux
+### Microsoft Windows (PowerShell)
+Open PowerShell (or Windows Terminal) and run:
 
-```bash
-curl -fsSL https://just-one-tau.vercel.app/linux | bash
+```powershell
+irm https://just-one-tau.vercel.app/windows | iex
 ```
 
 ---
 
-## macOS
+### macOS (Terminal)
+Open Terminal and run:
 
 ```bash
 curl -fsSL https://just-one-tau.vercel.app/mac | bash
@@ -43,113 +48,61 @@ curl -fsSL https://just-one-tau.vercel.app/mac | bash
 
 ---
 
-## Microsoft Windows
+### Linux (Any major distribution)
+Open Terminal and run:
 
-### Open PowerShell as Administrator
-
-Or:
-
-```text
-Win + X → Windows PowerShell (Admin)
-```
-
-### Run One Command
-
-```powershell
- irm https://just-one-tau.vercel.app/windows | iex
+```bash
+curl -fsSL https://just-one-tau.vercel.app/linux | bash
 ```
 
 ---
 
-## Preview
+## What Just One Does Automatically
 
-![Banner and System Info](https://i.postimg.cc/kXQtgsRz/just-One1.jpg)
-
-![Model Recommendation Table](https://i.postimg.cc/HWc8TLzh/Screenshot-2026-05-13-163251.png)
-
----
-
-## What It Does
-
-| Step | Action                                                         |
-| ---- | -------------------------------------------------------------- |
-| 1    | Detects your Linux distribution and installs `curl` if missing |
-| 2    | Reads your CPU, RAM, GPU, VRAM and free disk space             |
-| 3    | Installs Ollama via the official installer script              |
-| 4    | Starts the Ollama background server                            |
-| 5    | Verifies VSCode CLI and installs the Continue extension        |
-| 6    | Fetches the full live model list from `ollama.com/library`     |
-| 7    | Filters models by your available memory — no hardcoded lists   |
-| 8    | Lets you pick models interactively from a numbered table       |
-| 9    | Pulls selected models and guarantees the fallback is installed |
-| 10   | Writes a complete `~/.continue/config.yaml`                    |
-| 11   | Opens VSCode in the current directory                          |
+| Step | Action |
+| :--- | :--- |
+| 1 | **System Hardware Profiling**: Detects CPU cores, RAM, GPU/VRAM, and free disk space. |
+| 2 | **GPU Acceleration Optimizations**: Sets `OLLAMA_FLASH_ATTENTION=1` and `24h` model keep-alive. |
+| 3 | **Ollama Installation**: Installs Ollama and starts the local background server daemon. |
+| 4 | **Multi-Editor Detection**: Checks for **VS Code**, **Cursor**, **VS Code Insiders**, or **VSCodium** and installs the Continue extension. |
+| 5 | **Live Model Discovery**: Fetches model families from `ollama.com/library` and filters them by memory footprint. |
+| 6 | **1-Click Quick Setup or Custom Table**: Choose between 1-click recommended setup or custom selection. |
+| 7 | **Tab-Autocomplete Model**: Guarantees fast local FIM model (`qwen2.5-coder:1.5b`) for instant tab completions. |
+| 8 | **Codebase RAG Embedding Model**: Automatically installs `nomic-embed-text` so `@codebase` semantic indexing works immediately. |
+| 9 | **Configuration & Rules**: Generates `~/.continue/config.yaml` and `~/.continue/.continuerules`. |
+| 10 | **Editor Launch**: Automatically launches your code editor in the current directory ready for local AI pairing. |
 
 ---
 
-## Requirements
+## Smart Hardware-Adaptive Presets
 
-- Linux (any major distribution)
-- Bash 4+
-- `sudo` access (for package installation if `curl` is missing)
-- VSCode with the `code` CLI command enabled
-- Internet connection
----
+You can choose between **1-Click Quick Setup** or **Custom Selection**:
 
-## Linux Supported Distributions
+### ⚡ Mode 1: Quick Setup (Auto-Engineered for your specs)
 
-| Distro Family                   | Package Manager |
-| ------------------------------- | --------------- |
-| Ubuntu, Debian, Mint, Pop, Kali | `apt`           |
-| Fedora                          | `dnf`           |
-| CentOS, RHEL, AlmaLinux, Rocky  | `yum`           |
-| Arch, Manjaro, EndeavourOS      | `pacman`        |
-| openSUSE, SLES                  | `zypper`        |
-| Alpine                          | `apk`           |
-| Void Linux                      | `xbps`          |
+| Hardware Tier | Primary Chat/Edit Model | Fast Tab-Autocomplete | Codebase RAG |
+| :--- | :--- | :--- | :--- |
+| **8 GB RAM** | `qwen2.5-coder:3b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
+| **16 GB RAM / 8GB VRAM** | `qwen2.5-coder:7b` + `deepseek-r1:7b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
+| **24 GB+ RAM / 12GB+ VRAM**| `qwen2.5-coder:14b` + `deepseek-r1:8b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
+
+### 🛠️ Mode 2: Custom Selection
+Browse an interactive numbered CLI table categorized by role (`[Coder]`, `[Reasoning]`, `[Vision]`, `[General]`) and enter comma-separated numbers (e.g. `1,3`).
 
 ---
 
-## Model Filtering Logic
+## 65% Memory Budget Safety Rule
 
-The script never hardcodes models. Every run fetches the live list from `ollama.com/library`.
+The installer uses a safe 4-bit quant estimation formula:
+$$\text{size\_GB} = \lceil \text{parameters} \times 0.55 \rceil$$
 
-Models are then filtered using **pure name-based size estimation** — zero extra network calls, instant result:
-
-```
-size_GB = ceil( param_count × 0.55 )    # 4-bit quantisation estimate
-```
-
-Only models that fit within **65% of your effective memory** are shown, keeping the OS and other processes stable during inference.
-
-**Memory priority:**
-
-```
-GPU VRAM ≥ 8 GB  →  use VRAM   (GPU-accelerated inference)
-otherwise        →  use System RAM
-```
-
-**Profile labels shown in the table:**
-
-| Label         | Estimated Size |
-| ------------- | -------------- |
-| `lightweight` | ≤ 2 GB         |
-| `balanced`    | 3 – 6 GB       |
-| `heavy`       | 7 GB +         |
+Only models that comfortably fit within **65% of your effective memory** (GPU VRAM or System RAM) are made available. This guarantees your system stays responsive and never locks up or crashes during heavy inference.
 
 ---
 
-## Default Fallback Model
+## Continue Configuration Output (`config.yaml`)
 
-`qwen2.5-coder:1.5b` is always installed regardless of your selection.
-
-It is configured as `roles: [autocomplete]` only — a small, fast model dedicated to tab-autocomplete so it never competes with your main chat model.
-
----
-
-## Continue Config Output
-
-The generated `~/.continue/config.yaml` looks like this:
+The generated `~/.continue/config.yaml` is pre-configured with pure YAML and production-ready defaults:
 
 ```yaml
 name: Local AI Config
@@ -157,15 +110,29 @@ version: 1.0.0
 schema: v1
 
 models:
-  - name: mistral
+  - name: qwen2.5-coder:7b
     provider: ollama
-    model: mistral
-    roles: [chat, autocomplete]
+    model: qwen2.5-coder:7b
+    roles: [chat, edit]
+
+  - name: deepseek-r1:7b
+    provider: ollama
+    model: deepseek-r1:7b
+    roles: [chat, edit]
 
   - name: qwen2.5-coder:1.5b
     provider: ollama
     model: qwen2.5-coder:1.5b
     roles: [autocomplete]
+
+embeddingsProvider:
+  provider: ollama
+  model: nomic-embed-text
+
+tabAutocompleteModel:
+  title: Tab Autocomplete
+  provider: ollama
+  model: qwen2.5-coder:1.5b
 
 context:
   - provider: code
@@ -182,66 +149,66 @@ tabAutocomplete:
 slashCommands:
   - name: edit
     description: Edit selected code
+  - name: test
+    description: Generate unit tests for selected code
+  - name: refactor
+    description: Refactor code for cleanliness, performance, and best practices
+  - name: fix
+    description: Detect bugs, syntax errors, and security issues
+  - name: explain
+    description: Explain the highlighted code in detail
   - name: comment
-    description: Add comments to code
+    description: Add comprehensive docstrings and comments
   - name: share
     description: Export conversation
   - name: cmd
-    description: Generate a shell command
+    description: Generate shell command
 ```
 
 ---
 
-## Interactive Model Selection
+## Pre-Configured Developer Rules (`.continuerules`)
 
-After the table is displayed, enter the row numbers of the models you want to install, separated by commas:
-
-```
-Your choice:  1,4,7
-```
-
-Press **Enter** with no input to skip and use only the fallback model.
+A clean development guide is automatically written to `~/.continue/.continuerules` to keep your AI code generation professional:
+- Write clean, modular, modern, and well-typed code.
+- Always include error handling and handle edge cases gracefully.
+- Follow idioms and conventions of the target language.
+- Do not leave placeholder comments without implementation.
 
 ---
 
-## Troubleshooting
+## Multi-Editor Support
 
-**Continue extension fails to install**
-
-The `code --install-extension` command requires access to `*.vsassets.io`. If you are behind a restrictive firewall or DNS block, install it manually:
-
-1. Open VSCode
-2. Go to Extensions (`Ctrl+Shift+X`)
-3. Search for **Continue**
-4. Click Install
-
-**Ollama server does not start**
-
-```bash
-ollama serve
-```
-
-Run this manually in a separate terminal and then re-run the script.
-
-**No models appear in the table**
-
-Your RAM may be too low for the 65% threshold. The fallback `qwen2.5-coder:1.5b` (~1 GB) will still be installed automatically.
-
-**GPU not detected**
-
-The script detects NVIDIA via `nvidia-smi` and AMD via `rocm-smi`. If neither is installed, it falls back to system RAM for model sizing. Install the appropriate driver package to enable GPU detection.
+Just One automatically detects the first available editor CLI on your `PATH`:
+- **VS Code** (`code`)
+- **Cursor AI** (`cursor`)
+- **VS Code Insiders** (`code-insiders`)
+- **VSCodium** (`codium`)
 
 ---
 
-## Author
+## Supported Linux Distributions
 
-**moshiurrahmandeap11**
-GitHub — [github.com/moshiurrahmandeap11](https://github.com/moshiurrahmandeap11)
+| Distro Family | Package Manager |
+| :--- | :--- |
+| Ubuntu, Debian, Mint, Pop, Kali | `apt` |
+| Fedora | `dnf` |
+| CentOS, RHEL, AlmaLinux, Rocky | `yum` |
+| Arch, Manjaro, EndeavourOS | `pacman` |
+| openSUSE, SLES | `zypper` |
+| Alpine | `apk` |
+| Void Linux | `xbps` |
 
-<img src="https://komarev.com/ghpvc/?username=moshiurrahmandeap11&label=Page+Visitors&color=0e75b6&style=for-the-badge" alt="Views" /></div>
+---
+
+## Author & Community
+
+**Moshiur Rahman Deap**  
+- GitHub: [github.com/moshiurrahmandeap11](https://github.com/moshiurrahmandeap11)  
+- Website: [moshiurrahman.online](https://moshiurrahman.online)
 
 ---
 
 ## License
 
-MIT — free to use, modify and distribute.
+MIT — Free to use, modify, and distribute for personal and commercial projects.

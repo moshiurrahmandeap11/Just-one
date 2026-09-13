@@ -1,27 +1,36 @@
 {
-    "rewrites": [
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/linux",
+      "destination": "/setup.sh"
+    },
+    {
+      "source": "/mac",
+      "destination": "/mac-setup.sh"
+    },
+    {
+      "source": "/windows",
+      "destination": "/setup.ps1"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(windows|mac|linux|setup\\.sh|mac-setup\\.sh|setup\\.ps1)",
+      "headers": [
         {
-            "source": "/linux",
-            "destination": "/setup.sh"
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
         },
         {
-            "source": "/mac",
-            "destination": "/mac-setup.sh"
-        },
-        {
-            "source": "/windows",
-            "destination": "/setup.ps1"
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
         }
-    ],
-    "headers": [
-        {
-            "source": "/(.*)",
-            "headers": [
-                {
-                    "key": "Content-Type",
-                    "value": "text/plain"
-                }
-            ]
-        }
-    ]
+      ]
+    }
+  ]
 }
