@@ -1,21 +1,21 @@
 #!/bin/bash
 
-# ──────────────────────────────────────────────────────────────────
+# ------------------------------------------------------------------
 #  Just One  |  Local AI Automator  |  v2.5
 #  Linux Version
-#  Author : Moshiur Rahman Deap
-#  Github : https://github.com/moshiurrahmandeap11
-#  Contact: https://linkedin.com/in/moshiurrahmandeap
-#  Website: https://one.moshiur.pro
-#  License: MIT
-# ──────────────────────────────────────────────────────────────────
+#  Author  : Moshiur Rahman Deap
+#  Website : https://one.moshiur.pro  |  https://moshiur.pro
+#  Github  : https://github.com/moshiurrahmandeap11
+#  LinkedIn: https://linkedin.com/in/moshiurrahmandeap
+#  License : MIT
+# ------------------------------------------------------------------
 
 if [ -t 1 ]; then
     clear || true
 fi
 set -e
 
-# ── Terminal Styling ──────────────────────────────────────────────
+# -- Terminal Styling ----------------------------------------------
 RESET='\033[0m'
 BOLD='\033[1m'
 DIM='\033[2m'
@@ -28,12 +28,13 @@ DARK_CYAN='\033[0;36m'
 WHITE='\033[1;37m'
 
 TOTAL_STEPS=8
+BOX_INNER=64
 
-# ── Logger & UI Helpers ───────────────────────────────────────────
-log()   { echo -e "  ${GREEN}✔${RESET}  ${WHITE}$1${RESET}"; }
-warn()  { echo -e "  ${YELLOW}▲${RESET}  ${YELLOW}$1${RESET}"; }
-error() { echo -e "  ${RED}✖${RESET}  ${RED}$1${RESET}"; }
-info()  { echo -e "  ${CYAN}•${RESET}  ${DIM}$1${RESET}"; }
+# -- Logger & UI Helpers (Strictly Emoji-Free) ---------------------
+log()   { echo -e "  ${GREEN}[OK]${RESET} ${WHITE}$1${RESET}"; }
+warn()  { echo -e "  ${YELLOW}[>>]${RESET} ${YELLOW}$1${RESET}"; }
+error() { echo -e "  ${RED}[!!]${RESET} ${RED}$1${RESET}"; }
+info()  { echo -e "  ${CYAN}[--]${RESET} ${DIM}$1${RESET}"; }
 blank() { echo ""; }
 
 read_tty() {
@@ -47,46 +48,59 @@ read_tty() {
     eval "$_var_name=\$_val"
 }
 
+print_card_line() {
+    local label="$1"
+    local value="$2"
+    local extra="$3"
+    local vcolor="${4:-$CYAN}"
+    local bcolor="${5:-$DARK_CYAN}"
+    local prefix="  ${label}"
+    local mid=" | "
+    local body="${prefix}${mid}${value}${extra}"
+    local pad=$(( BOX_INNER - ${#body} ))
+    [ "$pad" -lt 1 ] && pad=1
+    local spaces
+    spaces=$(printf '%*s' "$pad" '')
+    echo -e "  ${bcolor}│${DIM}${prefix}${RESET}${DIM}${mid}${vcolor}${value}${DIM}${extra}${spaces}${bcolor}│${RESET}"
+}
+
 print_step() {
     local step="$1"
     local title="$2"
-    local badge="[$step/$TOTAL_STEPS]"
-    local prefix="  ╭─ $badge $title "
-    local fill_len=$(( 60 - ${#prefix} ))
+    local badge="STEP 0${step}/0${TOTAL_STEPS}"
+    local header=" ${badge} :: ${title} "
+    local fill_len=$(( BOX_INNER - ${#header} ))
     [ "$fill_len" -lt 4 ] && fill_len=4
     local fill
     fill=$(printf '─%.0s' $(seq 1 "$fill_len"))
     blank
-    echo -e "  ${DARK_CYAN}╭─ ${CYAN}${badge}${WHITE} ${title} ${DARK_CYAN}${fill}${RESET}"
+    echo -e "  ${DARK_CYAN}╭─ ${CYAN}${badge}${DIM} :: ${WHITE}${title} ${DARK_CYAN}${fill}${RESET}"
     blank
 }
 
 print_banner() {
-    local inner=56
+    blank
+    echo -e "  ${CYAN}     ██╗ ██╗   ██╗ ███████╗ ████████╗   ██████╗  ███╗   ██╗ ███████╗${RESET}"
+    echo -e "  ${CYAN}     ██║ ██║   ██║ ██╔════╝ ╚══██╔══╝  ██╔═══██╗ ████╗  ██║ ██╔════╝${RESET}"
+    echo -e "  ${WHITE}     ██║ ██║   ██║ ███████╗    ██║     ██║   ██║ ██╔██╗ ██║ █████╗  ${RESET}"
+    echo -e "  ${WHITE}██   ██║ ██║   ██║ ╚════██║    ██║     ██║   ██║ ██║╚██╗██║ ██╔══╝  ${RESET}"
+    echo -e "  ${GREEN}╚█████╔╝ ╚██████╔╝ ███████║    ██║     ╚██████╔╝ ██║ ╚████║ ███████╗${RESET}"
+    echo -e "  ${GREEN} ╚════╝   ╚═════╝  ╚══════╝    ╚═╝      ╚═════╝  ╚═╝  ╚═══╝ ╚═════╝ ${RESET}"
+
     local border
-    border=$(printf '─%.0s' $(seq 1 $inner))
-    local empty
-    empty=$(printf '%*s' $inner '')
-
-    local l1="   JUST ONE  //  LOCAL AI AUTOMATOR  v2.5"
-    local l2="   Zero-Config IDE Pairing  •  Ollama + Continue + RAG"
-    local l3="   By Moshiur Rahman Deap  •  one.moshiur.pro"
-
-    local p1=$(( inner - ${#l1} ))
-    local p2=$(( inner - ${#l2} ))
-    local p3=$(( inner - ${#l3} ))
+    border=$(printf '─%.0s' $(seq 1 $BOX_INNER))
+    local l1="  LOCAL AI & CODEBASE RAG AUTOMATOR  |  VERSION 2.5"
+    local l2="  Created by Moshiur Rahman Deap     |  one.moshiur.pro"
+    local p1=$(( BOX_INNER - ${#l1} ))
+    local p2=$(( BOX_INNER - ${#l2} ))
     [ "$p1" -lt 0 ] && p1=0
     [ "$p2" -lt 0 ] && p2=0
-    [ "$p3" -lt 0 ] && p3=0
 
     blank
-    echo -e "  ${CYAN}╭${border}╮${RESET}"
-    echo -e "  ${CYAN}│${empty}│${RESET}"
-    echo -e "  ${CYAN}│${BOLD}${CYAN}${l1}$(printf '%*s' "$p1" '')${CYAN}│${RESET}"
-    echo -e "  ${CYAN}│${DIM}${WHITE}${l2}$(printf '%*s' "$p2" '')${RESET}${CYAN}│${RESET}"
-    echo -e "  ${CYAN}│${DARK_CYAN}${l3}$(printf '%*s' "$p3" '')${CYAN}│${RESET}"
-    echo -e "  ${CYAN}│${empty}│${RESET}"
-    echo -e "  ${CYAN}╰${border}╯${RESET}"
+    echo -e "  ${DARK_CYAN}╭${border}╮${RESET}"
+    echo -e "  ${DARK_CYAN}│${WHITE}${l1}$(printf '%*s' "$p1" '')${DARK_CYAN}│${RESET}"
+    echo -e "  ${DARK_CYAN}│${CYAN}${l2}$(printf '%*s' "$p2" '')${DARK_CYAN}│${RESET}"
+    echo -e "  ${DARK_CYAN}╰${border}╯${RESET}"
     blank
 }
 
@@ -94,7 +108,7 @@ print_budget_bar() {
     local budget="$1"
     local total="$2"
     local source="$3"
-    local bar_w=22
+    local bar_w=24
     local filled
     if [ "$total" -gt 0 ]; then
         filled=$(( (budget * bar_w) / total ))
@@ -108,8 +122,17 @@ print_budget_bar() {
     [ "$filled" -gt 0 ] && f_str=$(printf '█%.0s' $(seq 1 "$filled"))
     [ "$empty" -gt 0 ] && e_str=$(printf '░%.0s' $(seq 1 "$empty"))
 
-    echo -e "  ${DIM}Memory Source ${RESET} │ ${CYAN}${total} GB${RESET} ${DIM}(${source})${RESET}"
-    echo -e "  ${DIM}Safe AI Budget${RESET} │ ${GREEN}[${f_str}${e_str}]${RESET} ${WHITE}${budget} GB${RESET} ${DIM}(65% Guard)${RESET}"
+    local top_title="─ MEMORY SAFETY GUARD "
+    local top_fill_len=$(( BOX_INNER - ${#top_title} ))
+    local top_fill
+    top_fill=$(printf '─%.0s' $(seq 1 "$top_fill_len"))
+    local border
+    border=$(printf '─%.0s' $(seq 1 $BOX_INNER))
+
+    echo -e "  ${DARK_CYAN}╭${top_title}${top_fill}╮${RESET}"
+    print_card_line "Memory Source " "${total} GB" " (${source})" "$CYAN"
+    print_card_line "Safe AI Budget" "[${f_str}${e_str}] ${budget} GB" " (65% Limit)" "$GREEN"
+    echo -e "  ${DARK_CYAN}╰${border}╯${RESET}"
     blank
 }
 
@@ -117,7 +140,7 @@ spin_wait() {
     local label="$1"
     local max_sec="$2"
     shift 2
-    local frames=('⠋' '⠙' '⠹' '⠸' '⠼' '⠴' '⠦' '⠧' '⠇' '⠏')
+    local frames=('[|]' '[/]' '[-]' '[\]')
     local max_ticks=$(( max_sec * 5 ))
     local tick=0
 
@@ -127,8 +150,8 @@ spin_wait() {
             return 0
         fi
         if [ -t 1 ]; then
-            local f="${frames[$(( tick % 10 ))]}"
-            printf "\r  ${CYAN}%s${RESET}  %s..." "$f" "$label"
+            local f="${frames[$(( tick % 4 ))]}"
+            printf "\r  ${CYAN}%s${RESET} %s..." "$f" "$label"
         fi
         tick=$(( tick + 1 ))
         sleep 0.2 2>/dev/null || sleep 1
@@ -137,7 +160,7 @@ spin_wait() {
     return 1
 }
 
-# ── Global Defaults ───────────────────────────────────────────────
+# -- Global Defaults -----------------------------------------------
 FALLBACK_MODEL="qwen2.5-coder:1.5b"
 EMBEDDING_MODEL="nomic-embed-text"
 SELECTED=()
@@ -149,9 +172,9 @@ DETECTED_EDITOR_CMDS=()
 BACKUP_PATH=""
 RAG_VERIFIED=false
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 #  STEP 1  |  Prerequisites & System Hardware Profile
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 ensure_curl() {
     if command -v curl &>/dev/null; then
@@ -226,12 +249,26 @@ detect_system() {
     DISK_FREE=$(df -Pk "$HOME" 2>/dev/null | awk 'NR==2 {printf "%d", $4 / 1024 / 1024}' || true)
     [[ "$DISK_FREE" =~ ^[0-9]+$ ]] || DISK_FREE=20
 
-    echo -e "  ${DIM}CPU       ${RESET} │ ${CYAN}${CPU_MODEL}${RESET} ${DIM}(${CPU_CORES} threads)${RESET}"
-    echo -e "  ${DIM}RAM       ${RESET} │ ${CYAN}${RAM_GB} GB${RESET} ${DIM}(${RAM_MB} MB)${RESET}"
-    echo -e "  ${DIM}GPU       ${RESET} │ ${CYAN}${GPU_NAME}${RESET} ${DIM}(${GPU_VRAM} GB VRAM)${RESET}"
-    echo -e "  ${DIM}Disk Free ${RESET} │ ${CYAN}${DISK_FREE} GB${RESET}"
+    local cpu_disp="$CPU_MODEL"
+    [ "${#cpu_disp}" -gt 35 ] && cpu_disp="${cpu_disp:0:32}..."
+    local gpu_disp="$GPU_NAME"
+    [ "${#gpu_disp}" -gt 35 ] && gpu_disp="${gpu_disp:0:32}..."
+
+    local top_title="─ HARDWARE TELEMETRY "
+    local top_fill
+    top_fill=$(printf '─%.0s' $(seq 1 $(( BOX_INNER - ${#top_title} ))))
+    local border
+    border=$(printf '─%.0s' $(seq 1 $BOX_INNER))
+
+    echo -e "  ${DARK_CYAN}╭${top_title}${top_fill}╮${RESET}"
+    print_card_line "CPU      " "$cpu_disp" " (${CPU_CORES} threads)"
+    print_card_line "RAM      " "${RAM_GB} GB" " (${RAM_MB} MB)"
+    print_card_line "GPU      " "$gpu_disp" " (${GPU_VRAM} GB)"
+    print_card_line "Disk Free" "${DISK_FREE} GB" ""
+    echo -e "  ${DARK_CYAN}╰${border}╯${RESET}"
 
     if [ "$DISK_FREE" -lt 8 ]; then
+        blank
         warn "Low disk space (${DISK_FREE} GB). Recommend at least 8 GB free for AI models."
     fi
 
@@ -244,9 +281,9 @@ detect_system() {
     fi
 }
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 #  STEP 2  |  Ollama Runtime & GPU Acceleration
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 ollama_ready() {
     curl -fsS --max-time 2 "http://127.0.0.1:11434/api/tags" >/dev/null 2>&1
@@ -311,9 +348,9 @@ setup_ollama() {
     fi
 }
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 #  STEP 3  |  Code Editors & Continue Extension
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 setup_editors() {
     print_step 3 "Code Editors & Continue Extension"
@@ -348,22 +385,22 @@ setup_editors() {
         local extensions
         extensions=$("$cmd" --list-extensions 2>/dev/null || true)
         if echo "$extensions" | grep -q "Continue.continue"; then
-            log "${name} detected — Continue extension ready"
+            log "${name} detected -- Continue extension ready"
         else
             info "Installing Continue extension in ${name}..."
             if "$cmd" --install-extension Continue.continue >/dev/null 2>&1; then
-                log "${name} detected — Continue extension installed"
+                log "${name} detected -- Continue extension installed"
             else
-                warn "${name} detected — could not auto-install Continue (install manually inside editor)"
+                warn "${name} detected -- could not auto-install Continue (install manually inside editor)"
             fi
         fi
         idx=$(( idx + 1 ))
     done
 }
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 #  STEP 4  |  Live Ollama Model Catalog
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 fetch_ollama_models() {
     print_step 4 "Live Ollama Model Catalog"
@@ -434,22 +471,39 @@ get_model_tag() {
     esac
 }
 
-# ─────────────────────────────────────────────────────────────────
-#  STEP 5  |  Interactive Mode Picker (5s Auto-Countdown + Arrows)
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
+#  STEP 5  |  Interactive Mode Picker (Strict Fixed-Width Alignment)
+# -----------------------------------------------------------------
 
-render_mode_options() {
+render_mode_box() {
     local current="$1"
     local hint="$2"
+    local border
+    border=$(printf '─%.0s' $(seq 1 $BOX_INNER))
+
+    local o1 o2 c1 c2
     if [ "$current" -eq 1 ]; then
-        echo -e "\r\033[2K  ${CYAN}> [1] ⚡ Express Auto Setup     (Recommended — best models for your hardware)${RESET}"
-        echo -e "\r\033[2K    ${DIM}[2] 🛠️  Custom Model Picker   (Browse live catalog and pick manually)${RESET}"
+        o1="  > [1] Express Auto Setup   | Recommended for your specs"
+        o2="    [2] Custom Model Picker  | Pick from live Ollama catalog"
+        c1="$CYAN"
+        c2="$DIM"
     else
-        echo -e "\r\033[2K    ${DIM}[1] ⚡ Express Auto Setup     (Recommended — best models for your hardware)${RESET}"
-        echo -e "\r\033[2K  ${YELLOW}> [2] 🛠️  Custom Model Picker   (Browse live catalog and pick manually)${RESET}"
+        o1="    [1] Express Auto Setup   | Recommended for your specs"
+        o2="  > [2] Custom Model Picker  | Pick from live Ollama catalog"
+        c1="$DIM"
+        c2="$YELLOW"
     fi
-    echo -e "\r\033[2K"
-    echo -e "\r\033[2K  ${DIM}${hint}${RESET}"
+
+    local p1=$(( BOX_INNER - ${#o1} ))
+    local p2=$(( BOX_INNER - ${#o2} ))
+    [ "$p1" -lt 0 ] && p1=0
+    [ "$p2" -lt 0 ] && p2=0
+
+    echo -e "\r\033[2K  ${DARK_CYAN}╭${border}╮${RESET}"
+    echo -e "\r\033[2K  ${DARK_CYAN}│${c1}${o1}$(printf '%*s' "$p1" '')${DARK_CYAN}│${RESET}"
+    echo -e "\r\033[2K  ${DARK_CYAN}│${c2}${o2}$(printf '%*s' "$p2" '')${DARK_CYAN}│${RESET}"
+    echo -e "\r\033[2K  ${DARK_CYAN}╰${border}╯${RESET}"
+    echo -e "\r\033[2K  ${WHITE}${hint}${RESET}"
 }
 
 select_mode_and_models() {
@@ -464,7 +518,7 @@ select_mode_and_models() {
     if [ "${JUST_ONE_AUTO:-0}" != "1" ] && [ -t 1 ] && [ -r /dev/tty ]; then
         echo -e "  ${WHITE}Select installation mode:${RESET}"
         blank
-        render_mode_options 1 "Use ↑/↓ or 1/2 to choose, then press [Enter] (default: 1)"
+        render_mode_box 1 "Use Up/Down or 1/2 to choose, then press [Enter]"
 
         while true; do
             local key=""
@@ -487,18 +541,18 @@ select_mode_and_models() {
                 choice=2
             elif [ "$key" = "c" ] || [ "$key" = "C" ]; then
                 choice=2
-                printf "\033[4A"
-                render_mode_options "$choice" "Selected [2] — opening Custom Model Picker..."
+                printf "\033[5A"
+                render_mode_box "$choice" "Selected [2] Custom Model Picker"
                 break
             elif [ -z "$key" ]; then
-                printf "\033[4A"
-                render_mode_options "$choice" "Confirmed [$choice]"
+                printf "\033[5A"
+                render_mode_box "$choice" "Confirmed [$choice]"
                 break
             else
                 continue
             fi
-            printf "\033[4A"
-            render_mode_options "$choice" "Selected [$choice] — press [Enter] to confirm"
+            printf "\033[5A"
+            render_mode_box "$choice" "Selected [$choice] -- press [Enter] to confirm"
         done
         blank
     fi
@@ -560,9 +614,9 @@ select_mode_and_models() {
     fi
 }
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 #  STEP 6  |  Download AI & Embedding Models
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 is_model_installed() {
     local model="$1"
@@ -629,9 +683,9 @@ install_all_models() {
     fi
 }
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 #  STEP 7  |  Backup & Write Continue Config (Pure YAML v1)
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 set_continue_config() {
     print_step 7 "Writing Continue Config & Rules"
@@ -726,9 +780,9 @@ EOF
     log "Developer rules written -> $rules_file"
 }
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 #  STEP 8  |  Live Health Check, Editor Launch & Summary
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 health_check_and_launch() {
     print_step 8 "Health Check & Editor Launch"
@@ -754,11 +808,10 @@ health_check_and_launch() {
 }
 
 print_summary() {
-    local inner=56
     local border
-    border=$(printf '─%.0s' $(seq 1 $inner))
-    local title="   ✔  JUST ONE SETUP COMPLETE"
-    local pad=$(( inner - ${#title} ))
+    border=$(printf '─%.0s' $(seq 1 $BOX_INNER))
+    local title="  [OK] JUST ONE SETUP COMPLETE"
+    local pad=$(( BOX_INNER - ${#title} ))
     [ "$pad" -lt 0 ] && pad=0
 
     blank
@@ -772,31 +825,59 @@ print_summary() {
     for m in "${FINAL_MODELS[@]}"; do
         if [ "$m" = "$FALLBACK_MODEL" ]; then
             fallback_listed=true
-            echo -e "    ${CYAN}•${RESET} ${GREEN}${m}${RESET}  ${DIM}[chat, edit, tab-autocomplete]${RESET}"
+            echo -e "    ${CYAN}+${RESET} ${GREEN}${m}${RESET}  ${DIM}[chat, edit, tab-autocomplete]${RESET}"
         else
-            echo -e "    ${CYAN}•${RESET} ${GREEN}${m}${RESET}  ${DIM}[chat, edit]${RESET}"
+            echo -e "    ${CYAN}+${RESET} ${GREEN}${m}${RESET}  ${DIM}[chat, edit]${RESET}"
         fi
     done
     if [ "$fallback_listed" = false ]; then
-        echo -e "    ${CYAN}•${RESET} ${GREEN}${FALLBACK_MODEL}${RESET}  ${DIM}[tab-autocomplete]${RESET}"
+        echo -e "    ${CYAN}+${RESET} ${GREEN}${FALLBACK_MODEL}${RESET}  ${DIM}[tab-autocomplete]${RESET}"
     fi
-    echo -e "    ${CYAN}•${RESET} ${GREEN}${EMBEDDING_MODEL}${RESET}  ${DIM}[@codebase RAG]${RESET}"
+    echo -e "    ${CYAN}+${RESET} ${GREEN}${EMBEDDING_MODEL}${RESET}  ${DIM}[@codebase RAG]${RESET}"
 
     blank
     local editor_summary="None detected"
     if [ ${#DETECTED_EDITOR_NAMES[@]} -gt 0 ]; then
         editor_summary=$(IFS=', '; echo "${DETECTED_EDITOR_NAMES[*]}")
     fi
-    echo -e "  ${DIM}Editors   ${RESET} │ ${CYAN}${editor_summary}${RESET}"
-    echo -e "  ${DIM}Config    ${RESET} │ ${DIM}$HOME/.continue/config.yaml${RESET}"
-    [ -n "$BACKUP_PATH" ] && echo -e "  ${DIM}Backup    ${RESET} │ ${DIM}${BACKUP_PATH}${RESET}"
-    echo -e "  ${DIM}Ollama API${RESET} │ $(ollama_ready && echo -e "${GREEN}Online (127.0.0.1:11434)${RESET}" || echo -e "${YELLOW}Warming up${RESET}")"
-    echo -e "  ${DIM}RAG Check ${RESET} │ $([ "$RAG_VERIFIED" = true ] && echo -e "${GREEN}Verified${RESET}" || echo -e "${DIM}On-demand${RESET}")"
+    local api_text="Warming up"
+    local api_color="$YELLOW"
+    if ollama_ready; then
+        api_text="Online (127.0.0.1:11434)"
+        api_color="$GREEN"
+    fi
+    local rag_text="On-demand"
+    local rag_color="$DIM"
+    if [ "$RAG_VERIFIED" = true ]; then
+        rag_text="Verified"
+        rag_color="$GREEN"
+    fi
+
+    local top_title="─ DEPLOYMENT SUMMARY "
+    local top_fill
+    top_fill=$(printf '─%.0s' $(seq 1 $(( BOX_INNER - ${#top_title} ))))
+    echo -e "  ${DARK_CYAN}╭${top_title}${top_fill}╮${RESET}"
+    print_card_line "Editors   " "$editor_summary" "" "$CYAN"
+    print_card_line "Config    " "~/.continue/config.yaml" "" "$WHITE"
+    [ -n "$BACKUP_PATH" ] && print_card_line "Backup    " "$(basename "$BACKUP_PATH")" "" "$DIM"
+    print_card_line "Ollama API" "$api_text" "" "$api_color"
+    print_card_line "RAG Status" "$rag_text" "" "$rag_color"
+    echo -e "  ${DARK_CYAN}╰${border}╯${RESET}"
 
     blank
     echo -e "  ${WHITE}Quick Shortcuts:${RESET}"
-    echo -e "    ${DIM}Ctrl+L  Chat with AI      •  Ctrl+I  Inline Code Edit${RESET}"
-    echo -e "    ${DIM}Tab     FIM Autocomplete  •  @codebase  Semantic Project Search${RESET}"
+    echo -e "    ${DIM}Ctrl+L  Chat with AI      |  Ctrl+I     Inline Code Edit${RESET}"
+    echo -e "    ${DIM}Tab     FIM Autocomplete  |  @codebase  Semantic Project Search${RESET}"
+    blank
+
+    local c1="  Engineered by Moshiur Rahman Deap"
+    local c2="  Web: https://one.moshiur.pro  |  https://moshiur.pro"
+    local c3="  Git: https://github.com/moshiurrahmandeap11"
+    echo -e "  ${DIM}╭${border}╮${RESET}"
+    echo -e "  ${DIM}│${CYAN}${c1}$(printf '%*s' $(( BOX_INNER - ${#c1} )) '')${DIM}│${RESET}"
+    echo -e "  ${DIM}│${RESET}${c2}$(printf '%*s' $(( BOX_INNER - ${#c2} )) '')${DIM}│${RESET}"
+    echo -e "  ${DIM}│${RESET}${c3}$(printf '%*s' $(( BOX_INNER - ${#c3} )) '')${DIM}│${RESET}"
+    echo -e "  ${DIM}╰${border}╯${RESET}"
     blank
 }
 
@@ -815,9 +896,9 @@ open_github() {
     fi
 }
 
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 #  ENTRY POINT
-# ─────────────────────────────────────────────────────────────────
+# -----------------------------------------------------------------
 
 print_banner
 detect_system

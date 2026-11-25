@@ -10,7 +10,7 @@
 > **One-command zero-config local AI setup for your code editor.**  
 > Installs Ollama, fetches models, filters them safely by your hardware, sets up Codebase RAG embeddings, and configures the Continue extension across **VS Code, Cursor, and VSCodium** — completely automatically.
 
-🌐 **Live Web Landing Page & Hardware Calculator:** [https://one.moshiur.pro/](https://one.moshiur.pro/)
+**Live Web Landing Page & Hardware Calculator:** [https://one.moshiur.pro/](https://one.moshiur.pro/)
 
 ![Command Gif](https://i.postimg.cc/Kcfs16k3/In-Shot-20260513-023053831-ezgif-com-video-to-gif-converter.gif)
 
@@ -76,7 +76,7 @@ curl -fsSL https://one.moshiur.pro/linux | bash
 
 You can choose between **1-Click Quick Setup** or **Custom Selection**:
 
-### ⚡ Mode 1: Quick Setup (Auto-Engineered for your specs)
+### Mode 1: Express Auto Setup (Recommended for your specs)
 
 | Hardware Tier | Primary Chat/Edit Model | Fast Tab-Autocomplete | Codebase RAG |
 | :--- | :--- | :--- | :--- |
@@ -85,7 +85,7 @@ You can choose between **1-Click Quick Setup** or **Custom Selection**:
 | **12 GB+ VRAM / 16 GB RAM** | `qwen2.5-coder:7b` + `deepseek-r1:7b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
 | **24 GB+ RAM / 24 GB+ VRAM**| `qwen2.5-coder:14b` + `deepseek-r1:8b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
 
-### 🛠️ Mode 2: Custom Selection
+### Mode 2: Custom Model Picker
 Browse an interactive numbered CLI table categorized by role (`[Coder]`, `[Reasoning]`, `[Vision]`, `[General]`) and enter comma-separated numbers (e.g. `1,3`).
 
 ---

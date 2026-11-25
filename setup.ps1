@@ -1,11 +1,11 @@
 # ------------------------------------------------------------------
 #  Just One  |  Local AI Automator  |  v2.5
 #  Windows PowerShell Version
-#  Author : Moshiur Rahman Deap
-#  Contact: https://www.linkedin.com/in/moshiurrahmandeap
-#  Github : https://github.com/moshiurrahmandeap11
-#  Website: https://one.moshiur.pro
-#  License: MIT
+#  Author  : Moshiur Rahman Deap
+#  Website : https://one.moshiur.pro  |  https://moshiur.pro
+#  Github  : https://github.com/moshiurrahmandeap11
+#  LinkedIn: https://linkedin.com/in/moshiurrahmandeap
+#  License : MIT
 # ------------------------------------------------------------------
 
 if ($Host.Name -eq 'ConsoleHost') {
@@ -13,7 +13,7 @@ if ($Host.Name -eq 'ConsoleHost') {
 }
 $ErrorActionPreference = "Stop"
 
-# Enable UTF-8 output for crisp box-drawing & spinner glyphs
+# Enable UTF-8 output for crisp box-drawing & block-art glyphs
 try {
     [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
     $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -27,79 +27,112 @@ try {
     }
 } catch {}
 
-try { $Host.UI.RawUI.WindowTitle = "Just One Installer v2.5" } catch {}
+try { $Host.UI.RawUI.WindowTitle = "Just One v2.5 | Moshiur Rahman Deap" } catch {}
 
-# -- Unicode Glyphs (defined via codepoints so file stays pure ASCII without BOM) --
-$script:G_TL      = [string][char]0x256D  # rounded top-left
-$script:G_TR      = [string][char]0x256E  # rounded top-right
-$script:G_BL      = [string][char]0x2570  # rounded bottom-left
-$script:G_BR      = [string][char]0x256F  # rounded bottom-right
-$script:G_H       = [string][char]0x2500  # horizontal line
-$script:G_V       = [string][char]0x2502  # vertical line
-$script:G_FULL    = [string][char]0x2588  # full block
-$script:G_SHADE   = [string][char]0x2591  # light shade
-$script:G_CHECK   = [string][char]0x2714  # check mark
-$script:G_WARN    = [string][char]0x25B2  # warning triangle
-$script:G_CROSS   = [string][char]0x2716  # cross mark
-$script:G_DOT     = [string][char]0x2022  # bullet dot
-$script:G_UP      = [string][char]0x2191  # up arrow
-$script:G_DOWN    = [string][char]0x2193  # down arrow
-$script:G_ARROW   = [string][char]0x2192  # right arrow
-$script:G_BOLT    = [string][char]0x26A1  # lightning bolt
-$script:G_SPINNER = @(
-    [string][char]0x280B, [string][char]0x2819, [string][char]0x2839, [string][char]0x2838, [string][char]0x283C,
-    [string][char]0x2834, [string][char]0x2826, [string][char]0x2827, [string][char]0x2807, [string][char]0x280F
-)
+# -- Unicode Box & Block Glyphs (codepoints keep source 100% pure ASCII) --
+$script:G_TL    = [string][char]0x256D  # rounded top-left
+$script:G_TR    = [string][char]0x256E  # rounded top-right
+$script:G_BL    = [string][char]0x2570  # rounded bottom-left
+$script:G_BR    = [string][char]0x256F  # rounded bottom-right
+$script:G_H     = [string][char]0x2500  # horizontal line
+$script:G_V     = [string][char]0x2502  # vertical line
+$script:G_FULL  = [string][char]0x2588  # full block
+$script:G_SHADE = [string][char]0x2591  # light shade
+$script:G_DH    = [string][char]0x2550  # double horizontal
+$script:G_DQ    = [string][char]0x2554  # double top-left
+$script:G_DW    = [string][char]0x2557  # double top-right
+$script:G_DV    = [string][char]0x2551  # double vertical
+$script:G_DL    = [string][char]0x255A  # double bottom-left
+$script:G_DR    = [string][char]0x255D  # double bottom-right
+$script:G_PTR   = ">"
 
-# -- UI Helpers ----------------------------------------------------
+# -- UI Helpers (Strictly Emoji-Free) ------------------------------
 $script:TOTAL_STEPS = 8
+$script:BOX_INNER = 64
 
-function Write-Log   { Write-Host "  $($script:G_CHECK)  " -NoNewline -ForegroundColor Green;  Write-Host "$args" -ForegroundColor White }
-function Write-Warn  { Write-Host "  $($script:G_WARN)  "  -NoNewline -ForegroundColor Yellow; Write-Host "$args" -ForegroundColor Yellow }
-function Write-Err   { Write-Host "  $($script:G_CROSS)  " -NoNewline -ForegroundColor Red;    Write-Host "$args" -ForegroundColor Red }
-function Write-Info  { Write-Host "  $($script:G_DOT)  "   -NoNewline -ForegroundColor Cyan;   Write-Host "$args" -ForegroundColor Gray }
+function Write-Log   { Write-Host "  [OK] " -NoNewline -ForegroundColor Green;  Write-Host "$args" -ForegroundColor White }
+function Write-Warn  { Write-Host "  [>>] " -NoNewline -ForegroundColor Yellow; Write-Host "$args" -ForegroundColor Yellow }
+function Write-Err   { Write-Host "  [!!] " -NoNewline -ForegroundColor Red;    Write-Host "$args" -ForegroundColor Red }
+function Write-Info  { Write-Host "  [--] " -NoNewline -ForegroundColor Cyan;   Write-Host "$args" -ForegroundColor Gray }
 function Write-Blank { Write-Host "" }
+
+function Expand-BlockArt {
+    param([string]$Template)
+    return $Template.Replace('B', $script:G_FULL).Replace('Q', $script:G_DQ).Replace('E', $script:G_DH).Replace('W', $script:G_DW).Replace('V', $script:G_DV).Replace('L', $script:G_DL).Replace('R', $script:G_DR)
+}
+
+function Write-CardLine {
+    param(
+        [string]$Label,
+        [string]$Value,
+        [string]$Extra = "",
+        [string]$ValueColor = "Cyan",
+        [string]$BorderColor = "DarkCyan"
+    )
+    $inner = $script:BOX_INNER
+    $prefix = "  $Label"
+    $mid = " | "
+    $body = "$prefix$mid$Value$Extra"
+    $pad = [math]::Max(1, $inner - $body.Length)
+    Write-Host "  $($script:G_V)" -NoNewline -ForegroundColor $BorderColor
+    Write-Host $prefix -NoNewline -ForegroundColor Gray
+    Write-Host $mid -NoNewline -ForegroundColor DarkGray
+    Write-Host $Value -NoNewline -ForegroundColor $ValueColor
+    if ($Extra) { Write-Host $Extra -NoNewline -ForegroundColor DarkGray }
+    Write-Host (" " * $pad) -NoNewline
+    Write-Host "$($script:G_V)" -ForegroundColor $BorderColor
+}
 
 function Write-Step {
     param(
         [int]$Step,
         [string]$Title
     )
-    $badge = "[$Step/$($script:TOTAL_STEPS)]"
-    $prefix = "  $($script:G_TL)$($script:G_H) $badge $Title "
-    $fillCount = [math]::Max(4, 60 - $prefix.Length)
+    $badge = "STEP 0$Step/0$($script:TOTAL_STEPS)"
+    $headerText = " $badge :: $Title "
+    $fillCount = [math]::Max(4, ($script:BOX_INNER + 2) - $headerText.Length - 2)
     $fill = $script:G_H * $fillCount
     Write-Blank
     Write-Host "  $($script:G_TL)$($script:G_H) " -NoNewline -ForegroundColor DarkCyan
-    Write-Host "$badge" -NoNewline -ForegroundColor Cyan
-    Write-Host " $Title " -NoNewline -ForegroundColor White
-    Write-Host "$fill" -ForegroundColor DarkCyan
+    Write-Host $badge -NoNewline -ForegroundColor Cyan
+    Write-Host " :: " -NoNewline -ForegroundColor DarkGray
+    Write-Host $Title -NoNewline -ForegroundColor White
+    Write-Host " $fill" -ForegroundColor DarkCyan
     Write-Blank
 }
 
 function Show-Banner {
-    $innerWidth = 56
-    $border = $script:G_H * $innerWidth
-    $dot = $script:G_DOT
-    $lines = @(
-        @{ Text = "   JUST ONE  //  LOCAL AI AUTOMATOR  v2.5"; Color = "Cyan" },
-        @{ Text = "   Zero-Config IDE Pairing  $dot  Ollama + Continue + RAG"; Color = "Gray" },
-        @{ Text = "   By Moshiur Rahman Deap  $dot  one.moshiur.pro"; Color = "DarkCyan" }
+    $logo = @(
+        @{ T = "     BBW BBW   BBW BBBBBBBW BBBBBBBBW   BBBBBBW  BBBW   BBW BBBBBBBW"; C = "Cyan" },
+        @{ T = "     BBV BBV   BBV BBQEEEER LEEBBQEER  BBQEEEBBW BBBBW  BBV BBQEEEER"; C = "Cyan" },
+        @{ T = "     BBV BBV   BBV BBBBBBBW    BBV     BBV   BBV BBQBBW BBV BBBBBW  "; C = "White" },
+        @{ T = "BB   BBV BBV   BBV LEEEEBBV    BBV     BBV   BBV BBVLBBWBBV BBQEEER "; C = "White" },
+        @{ T = "LBBBBBQR LBBBBBBQR BBBBBBBV    BBV     LBBBBBBQR BBV LBBBBV BBBBBBBW"; C = "Green" },
+        @{ T = " LEEEER   LEEEEER  LEEEEEER    LER      LEEEEER  LER  LEEER LEEEEER "; C = "Green" }
     )
 
     Write-Blank
-    Write-Host "  $($script:G_TL)$border$($script:G_TR)" -ForegroundColor Cyan
-    Write-Host ("  $($script:G_V)" + (" " * $innerWidth) + "$($script:G_V)") -ForegroundColor Cyan
-    foreach ($item in $lines) {
-        $txt = $item.Text
-        $padR = [math]::Max(0, $innerWidth - $txt.Length)
-        Write-Host "  $($script:G_V)" -NoNewline -ForegroundColor Cyan
-        Write-Host "$txt" -NoNewline -ForegroundColor $item.Color
-        Write-Host (" " * $padR) -NoNewline
-        Write-Host "$($script:G_V)" -ForegroundColor Cyan
+    foreach ($row in $logo) {
+        Write-Host ("  " + (Expand-BlockArt $row.T)) -ForegroundColor $row.C
     }
-    Write-Host ("  $($script:G_V)" + (" " * $innerWidth) + "$($script:G_V)") -ForegroundColor Cyan
-    Write-Host "  $($script:G_BL)$border$($script:G_BR)" -ForegroundColor Cyan
+
+    $inner = $script:BOX_INNER
+    $border = $script:G_H * $inner
+    $line1 = "  LOCAL AI & CODEBASE RAG AUTOMATOR  |  VERSION 2.5"
+    $line2 = "  Created by Moshiur Rahman Deap     |  one.moshiur.pro"
+
+    Write-Blank
+    Write-Host "  $($script:G_TL)$border$($script:G_TR)" -ForegroundColor DarkCyan
+    Write-Host "  $($script:G_V)" -NoNewline -ForegroundColor DarkCyan
+    Write-Host $line1 -NoNewline -ForegroundColor White
+    Write-Host (" " * [math]::Max(0, $inner - $line1.Length)) -NoNewline
+    Write-Host "$($script:G_V)" -ForegroundColor DarkCyan
+
+    Write-Host "  $($script:G_V)" -NoNewline -ForegroundColor DarkCyan
+    Write-Host $line2 -NoNewline -ForegroundColor Cyan
+    Write-Host (" " * [math]::Max(0, $inner - $line2.Length)) -NoNewline
+    Write-Host "$($script:G_V)" -ForegroundColor DarkCyan
+    Write-Host "  $($script:G_BL)$border$($script:G_BR)" -ForegroundColor DarkCyan
     Write-Blank
 }
 
@@ -109,22 +142,20 @@ function Show-BudgetBar {
         [double]$TotalGB,
         [string]$Source
     )
-    $barWidth = 22
+    $barWidth = 24
     $ratio = if ($TotalGB -gt 0) { [math]::Min(1.0, $BudgetGB / $TotalGB) } else { 0.65 }
     $filled = [math]::Round($barWidth * $ratio)
     $empty = $barWidth - $filled
     $bar = ($script:G_FULL * $filled) + ($script:G_SHADE * $empty)
 
-    Write-Host "  Memory Source  " -NoNewline -ForegroundColor Gray
-    Write-Host "$($script:G_V) " -NoNewline -ForegroundColor DarkGray
-    Write-Host "$TotalGB GB " -NoNewline -ForegroundColor Cyan
-    Write-Host "($Source)" -ForegroundColor DarkGray
+    $inner = $script:BOX_INNER
+    $topTitle = "$($script:G_H) MEMORY SAFETY GUARD "
+    $topFill = $script:G_H * ($inner - $topTitle.Length)
 
-    Write-Host "  Safe AI Budget " -NoNewline -ForegroundColor Gray
-    Write-Host "$($script:G_V) " -NoNewline -ForegroundColor DarkGray
-    Write-Host "[$bar] " -NoNewline -ForegroundColor Green
-    Write-Host "$BudgetGB GB " -NoNewline -ForegroundColor White
-    Write-Host "(65% Guard)" -ForegroundColor DarkGray
+    Write-Host "  $($script:G_TL)$topTitle$topFill$($script:G_TR)" -ForegroundColor DarkCyan
+    Write-CardLine -Label "Memory Source " -Value "$TotalGB GB" -Extra " ($Source)" -ValueColor "Cyan"
+    Write-CardLine -Label "Safe AI Budget" -Value "[$bar] $BudgetGB GB" -Extra " (65% Limit)" -ValueColor "Green"
+    Write-Host "  $($script:G_BL)$($script:G_H * $inner)$($script:G_BR)" -ForegroundColor DarkCyan
     Write-Blank
 }
 
@@ -134,6 +165,7 @@ function Invoke-SpinnerWait {
         [scriptblock]$Condition,
         [int]$TimeoutSec = 20
     )
+    $frames = @('[|]', '[/]', '[-]', '[\]')
     $sw = [System.Diagnostics.Stopwatch]::StartNew()
     $idx = 0
 
@@ -144,9 +176,9 @@ function Invoke-SpinnerWait {
             }
             return $true
         }
-        $f = $script:G_SPINNER[$idx % $script:G_SPINNER.Count]
+        $f = $frames[$idx % $frames.Count]
         if ($Host.Name -eq 'ConsoleHost') {
-            Write-Host "`r  $f  $Label..." -NoNewline -ForegroundColor Cyan
+            Write-Host "`r  $f $Label..." -NoNewline -ForegroundColor Cyan
         }
         $idx++
         Start-Sleep -Milliseconds 120
@@ -267,26 +299,22 @@ function Get-SystemInfo {
         $DISK_FREE = [math]::Round($disk.Free / 1GB, 1)
     } catch {}
 
-    Write-Host "  CPU        " -NoNewline -ForegroundColor Gray
-    Write-Host "$($script:G_V) " -NoNewline -ForegroundColor DarkGray
-    Write-Host "$CPU_MODEL" -NoNewline -ForegroundColor Cyan
-    Write-Host " ($CPU_CORES threads)" -ForegroundColor DarkGray
+    # Truncate long hardware names so card frame stays aligned
+    $cpuDisp = if ($CPU_MODEL.Length -gt 35) { $CPU_MODEL.Substring(0, 32) + "..." } else { $CPU_MODEL }
+    $gpuDisp = if ($GPU_NAME.Length -gt 35) { $GPU_NAME.Substring(0, 32) + "..." } else { $GPU_NAME }
 
-    Write-Host "  RAM        " -NoNewline -ForegroundColor Gray
-    Write-Host "$($script:G_V) " -NoNewline -ForegroundColor DarkGray
-    Write-Host "$RAM_GB GB" -NoNewline -ForegroundColor Cyan
-    Write-Host " ($RAM_MB MB)" -ForegroundColor DarkGray
-
-    Write-Host "  GPU        " -NoNewline -ForegroundColor Gray
-    Write-Host "$($script:G_V) " -NoNewline -ForegroundColor DarkGray
-    Write-Host "$GPU_NAME" -NoNewline -ForegroundColor Cyan
-    Write-Host " ($GPU_VRAM GB VRAM)" -ForegroundColor DarkGray
-
-    Write-Host "  Disk Free  " -NoNewline -ForegroundColor Gray
-    Write-Host "$($script:G_V) " -NoNewline -ForegroundColor DarkGray
-    Write-Host "$DISK_FREE GB" -ForegroundColor Cyan
+    $inner = $script:BOX_INNER
+    $topTitle = "$($script:G_H) HARDWARE TELEMETRY "
+    $topFill = $script:G_H * ($inner - $topTitle.Length)
+    Write-Host "  $($script:G_TL)$topTitle$topFill$($script:G_TR)" -ForegroundColor DarkCyan
+    Write-CardLine -Label "CPU      " -Value $cpuDisp -Extra " ($CPU_CORES threads)"
+    Write-CardLine -Label "RAM      " -Value "$RAM_GB GB" -Extra " ($RAM_MB MB)"
+    Write-CardLine -Label "GPU      " -Value $gpuDisp -Extra " ($GPU_VRAM GB)"
+    Write-CardLine -Label "Disk Free" -Value "$DISK_FREE GB"
+    Write-Host "  $($script:G_BL)$($script:G_H * $inner)$($script:G_BR)" -ForegroundColor DarkCyan
 
     if ($DISK_FREE -gt 0 -and $DISK_FREE -lt 8) {
+        Write-Blank
         Write-Warn "Low disk space ($DISK_FREE GB). Recommend at least 8 GB free for AI models."
     }
 
@@ -423,7 +451,7 @@ function Setup-Editors {
     if ($script:DETECTED_EDITORS.Count -eq 0) {
         Write-Warn "No supported editor CLI found on PATH (checked code, cursor, code-insiders, codium)."
         if ((Get-Command winget -ErrorAction SilentlyContinue) -and [Environment]::UserInteractive -and ($env:JUST_ONE_AUTO -ne "1")) {
-            Write-Host "  $($script:G_DOT)  Auto-install VS Code via winget? [y/N]: " -NoNewline -ForegroundColor Cyan
+            Write-Host "  [--] Auto-install VS Code via winget? [y/N]: " -NoNewline -ForegroundColor Cyan
             try {
                 $ans = Read-Host
                 if ($ans -match '^[yY]') {
@@ -526,8 +554,31 @@ function Get-ModelTag {
 }
 
 # -----------------------------------------------------------------
-#  STEP 5  |  Interactive Mode Picker (User Always Chooses)
+#  STEP 5  |  Interactive Mode Picker (Strict Fixed-Width Alignment)
 # -----------------------------------------------------------------
+
+function Render-ModeBox {
+    param([int]$SelectedChoice, [string]$HintText)
+    $inner = $script:BOX_INNER
+    $border = $script:G_H * $inner
+
+    $opt1 = if ($SelectedChoice -eq 1) { "  > [1] Express Auto Setup   | Recommended for your specs" } else { "    [1] Express Auto Setup   | Recommended for your specs" }
+    $opt2 = if ($SelectedChoice -eq 2) { "  > [2] Custom Model Picker  | Pick from live Ollama catalog" } else { "    [2] Custom Model Picker  | Pick from live Ollama catalog" }
+
+    $pad1 = " " * [math]::Max(0, $inner - $opt1.Length)
+    $pad2 = " " * [math]::Max(0, $inner - $opt2.Length)
+
+    Write-Host "  $($script:G_TL)$border$($script:G_TR)" -ForegroundColor DarkCyan
+    Write-Host "  $($script:G_V)" -NoNewline -ForegroundColor DarkCyan
+    Write-Host "$opt1$pad1" -NoNewline -ForegroundColor $(if ($SelectedChoice -eq 1) { "Cyan" } else { "DarkGray" })
+    Write-Host "$($script:G_V)" -ForegroundColor DarkCyan
+
+    Write-Host "  $($script:G_V)" -NoNewline -ForegroundColor DarkCyan
+    Write-Host "$opt2$pad2" -NoNewline -ForegroundColor $(if ($SelectedChoice -eq 2) { "Yellow" } else { "DarkGray" })
+    Write-Host "$($script:G_V)" -ForegroundColor DarkCyan
+    Write-Host "  $($script:G_BL)$border$($script:G_BR)" -ForegroundColor DarkCyan
+    Write-Host ("  " + $HintText + (" " * [math]::Max(0, 62 - $HintText.Length))) -ForegroundColor White
+}
 
 function Show-ModeSelector {
     $script:SELECTED = @()
@@ -549,14 +600,9 @@ function Show-ModeSelector {
         Write-Host "  Select installation mode:" -ForegroundColor White
         Write-Blank
 
-        Write-Host "  > [1] $($script:G_BOLT) Express Auto Setup     (Recommended - best models for your hardware)" -ForegroundColor Cyan
-        Write-Host "    [2]    Custom Model Picker   (Browse live catalog and pick manually)" -ForegroundColor DarkGray
-        Write-Blank
-        Write-Host "  Use $($script:G_UP)/$($script:G_DOWN) or 1/2 to choose, then press [Enter] (default: 1)" -ForegroundColor DarkGray
-
+        Render-ModeBox -SelectedChoice 1 -HintText "Use Up/Down or 1/2 to choose, then press [Enter]"
         $endRow = [Console]::CursorTop
-        $opt1Row = [math]::Max(0, $endRow - 4)
-        $hintRow = [math]::Max(0, $endRow - 1)
+        $boxTopRow = [math]::Max(0, $endRow - 5)
 
         while ($true) {
             $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
@@ -567,24 +613,24 @@ function Show-ModeSelector {
                 $choice = 2
             } elseif ($key.Character -eq 'c' -or $key.Character -eq 'C') {
                 $choice = 2
+                try {
+                    [Console]::SetCursorPosition(0, $boxTopRow)
+                    Render-ModeBox -SelectedChoice $choice -HintText "Selected [2] Custom Model Picker"
+                } catch {}
                 break
             } elseif ($key.VirtualKeyCode -eq 13) {
+                try {
+                    [Console]::SetCursorPosition(0, $boxTopRow)
+                    Render-ModeBox -SelectedChoice $choice -HintText "Confirmed [$choice]"
+                } catch {}
                 break
             } else {
                 continue
             }
 
             try {
-                [Console]::SetCursorPosition(0, $opt1Row)
-                if ($choice -eq 1) {
-                    Write-Host "  > [1] $($script:G_BOLT) Express Auto Setup     (Recommended - best models for your hardware)" -ForegroundColor Cyan
-                    Write-Host "    [2]    Custom Model Picker   (Browse live catalog and pick manually)" -ForegroundColor DarkGray
-                } else {
-                    Write-Host "    [1] $($script:G_BOLT) Express Auto Setup     (Recommended - best models for your hardware)" -ForegroundColor DarkGray
-                    Write-Host "  > [2]    Custom Model Picker   (Browse live catalog and pick manually)" -ForegroundColor Yellow
-                }
-                [Console]::SetCursorPosition(0, $hintRow)
-                Write-Host ("  Selected [$choice] -- press [Enter] to confirm" + (" " * 25)) -ForegroundColor White
+                [Console]::SetCursorPosition(0, $boxTopRow)
+                Render-ModeBox -SelectedChoice $choice -HintText "Selected [$choice] -- press [Enter] to confirm"
             } catch {}
         }
         Write-Blank
@@ -772,7 +818,7 @@ function Set-ContinueConfig {
         try {
             Copy-Item -Path $configPath -Destination $backup -Force
             $script:BACKUP_PATH = $backup
-            Write-Info "Existing config backed up $($script:G_ARROW) $backup"
+            Write-Info "Existing config backed up -> $backup"
         } catch {}
     }
 
@@ -815,7 +861,7 @@ context:
 
     $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
     [System.IO.File]::WriteAllText($configPath, $configYaml, $utf8NoBom)
-    Write-Log "Continue YAML v1 written $($script:G_ARROW) $configPath"
+    Write-Log "Continue YAML v1 written -> $configPath"
 
     $rulesContent = @"
 # Local AI Development Rules
@@ -825,7 +871,7 @@ context:
 - Do not leave unfinished placeholder comments like '// TODO' without implementation.
 "@
     [System.IO.File]::WriteAllText($rulesPath, $rulesContent, $utf8NoBom)
-    Write-Log "Developer rules written $($script:G_ARROW) $rulesPath"
+    Write-Log "Developer rules written -> $rulesPath"
 }
 
 # -----------------------------------------------------------------
@@ -861,15 +907,15 @@ function Invoke-HealthCheckAndLaunch {
 }
 
 function Show-Summary {
-    $innerWidth = 56
-    $border = $script:G_H * $innerWidth
-    $title = "   $($script:G_CHECK)  JUST ONE SETUP COMPLETE"
+    $inner = $script:BOX_INNER
+    $border = $script:G_H * $inner
+    $title = "  [OK] JUST ONE SETUP COMPLETE"
+    $padTitle = " " * [math]::Max(0, $inner - $title.Length)
 
     Write-Blank
     Write-Host "  $($script:G_TL)$border$($script:G_TR)" -ForegroundColor Green
     Write-Host "  $($script:G_V)" -NoNewline -ForegroundColor Green
-    Write-Host $title -NoNewline -ForegroundColor White
-    Write-Host (" " * ($innerWidth - $title.Length)) -NoNewline
+    Write-Host "$title$padTitle" -NoNewline -ForegroundColor White
     Write-Host "$($script:G_V)" -ForegroundColor Green
     Write-Host "  $($script:G_BL)$border$($script:G_BR)" -ForegroundColor Green
     Write-Blank
@@ -877,7 +923,7 @@ function Show-Summary {
     Write-Host "  Active Models:" -ForegroundColor White
     $fallbackListed = $false
     foreach ($m in $FINAL_MODELS) {
-        Write-Host "    $($script:G_DOT) " -NoNewline -ForegroundColor Cyan
+        Write-Host "    + " -NoNewline -ForegroundColor Cyan
         Write-Host "$m" -NoNewline -ForegroundColor Green
         if ($m -eq $FALLBACK_MODEL) {
             $fallbackListed = $true
@@ -887,30 +933,44 @@ function Show-Summary {
         }
     }
     if (-not $fallbackListed) {
-        Write-Host "    $($script:G_DOT) " -NoNewline -ForegroundColor Cyan
+        Write-Host "    + " -NoNewline -ForegroundColor Cyan
         Write-Host "$FALLBACK_MODEL" -NoNewline -ForegroundColor Green
         Write-Host "  [tab-autocomplete]" -ForegroundColor DarkGray
     }
-    Write-Host "    $($script:G_DOT) " -NoNewline -ForegroundColor Cyan
+    Write-Host "    + " -NoNewline -ForegroundColor Cyan
     Write-Host "$EMBEDDING_MODEL" -NoNewline -ForegroundColor Green
     Write-Host "  [@codebase RAG]" -ForegroundColor DarkGray
 
     Write-Blank
     $editorList = if ($script:DETECTED_EDITORS.Count -gt 0) { ($script:DETECTED_EDITORS | ForEach-Object { $_.Name }) -join ", " } else { "None detected" }
-    Write-Host "  Editors        $($script:G_V) " -NoNewline -ForegroundColor Gray; Write-Host $editorList -ForegroundColor Cyan
-    Write-Host "  Config         $($script:G_V) " -NoNewline -ForegroundColor Gray; Write-Host "$env:USERPROFILE\.continue\config.yaml" -ForegroundColor DarkGray
+    $apiText = if (Test-OllamaReady) { "Online (127.0.0.1:11434)" } else { "Warming up" }
+    $ragText = if ($script:RAG_VERIFIED) { "Verified" } else { "On-demand" }
+
+    $topTitle = "$($script:G_H) DEPLOYMENT SUMMARY "
+    Write-Host "  $($script:G_TL)$topTitle$($script:G_H * ($inner - $topTitle.Length))$($script:G_TR)" -ForegroundColor DarkCyan
+    Write-CardLine -Label "Editors   " -Value $editorList -ValueColor "Cyan"
+    Write-CardLine -Label "Config    " -Value "~/.continue/config.yaml" -ValueColor "White"
     if ($script:BACKUP_PATH) {
-        Write-Host "  Backup         $($script:G_V) " -NoNewline -ForegroundColor Gray; Write-Host $script:BACKUP_PATH -ForegroundColor DarkGray
+        Write-CardLine -Label "Backup    " -Value (Split-Path $script:BACKUP_PATH -Leaf) -ValueColor "DarkGray"
     }
-    Write-Host "  Ollama API     $($script:G_V) " -NoNewline -ForegroundColor Gray
-    if (Test-OllamaReady) { Write-Host "Online (127.0.0.1:11434)" -ForegroundColor Green } else { Write-Host "Warming up" -ForegroundColor Yellow }
-    Write-Host "  RAG Check      $($script:G_V) " -NoNewline -ForegroundColor Gray
-    if ($script:RAG_VERIFIED) { Write-Host "Verified" -ForegroundColor Green } else { Write-Host "On-demand" -ForegroundColor DarkGray }
+    Write-CardLine -Label "Ollama API" -Value $apiText -ValueColor $(if (Test-OllamaReady) { "Green" } else { "Yellow" })
+    Write-CardLine -Label "RAG Status" -Value $ragText -ValueColor $(if ($script:RAG_VERIFIED) { "Green" } else { "Gray" })
+    Write-Host "  $($script:G_BL)$border$($script:G_BR)" -ForegroundColor DarkCyan
 
     Write-Blank
     Write-Host "  Quick Shortcuts:" -ForegroundColor White
-    Write-Host "    Ctrl+L  Chat with AI      $($script:G_DOT)  Ctrl+I  Inline Code Edit" -ForegroundColor DarkGray
-    Write-Host "    Tab     FIM Autocomplete  $($script:G_DOT)  @codebase  Semantic Project Search" -ForegroundColor DarkGray
+    Write-Host "    Ctrl+L  Chat with AI      |  Ctrl+I     Inline Code Edit" -ForegroundColor DarkGray
+    Write-Host "    Tab     FIM Autocomplete  |  @codebase  Semantic Project Search" -ForegroundColor DarkGray
+    Write-Blank
+
+    $credit1 = "  Engineered by Moshiur Rahman Deap"
+    $credit2 = "  Web: https://one.moshiur.pro  |  https://moshiur.pro"
+    $credit3 = "  Git: https://github.com/moshiurrahmandeap11"
+    Write-Host "  $($script:G_TL)$border$($script:G_TR)" -ForegroundColor DarkGray
+    Write-Host ("  $($script:G_V)$credit1" + (" " * [math]::Max(0, $inner - $credit1.Length)) + "$($script:G_V)") -ForegroundColor Cyan
+    Write-Host ("  $($script:G_V)$credit2" + (" " * [math]::Max(0, $inner - $credit2.Length)) + "$($script:G_V)") -ForegroundColor Gray
+    Write-Host ("  $($script:G_V)$credit3" + (" " * [math]::Max(0, $inner - $credit3.Length)) + "$($script:G_V)") -ForegroundColor Gray
+    Write-Host "  $($script:G_BL)$border$($script:G_BR)" -ForegroundColor DarkGray
     Write-Blank
 }
 
