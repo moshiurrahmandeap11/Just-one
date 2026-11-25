@@ -1,2 +1,2 @@
-*.sh linguist-language=Shell
-*.ps1 linguist-language=PowerShell
+*.sh text eol=lf linguist-language=Shell
+*.ps1 text eol=crlf linguist-language=PowerShell

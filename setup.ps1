@@ -1,4 +1,4 @@
-# ──────────────────────────────────────────────────────────────────
+﻿# ──────────────────────────────────────────────────────────────────
 #  Just One  |  Local AI Automator  |  v2.5
 #  Windows PowerShell Version
 #  Author : Moshiur Rahman Deap
@@ -7,13 +7,15 @@
 #  License: MIT
 # ──────────────────────────────────────────────────────────────────
 
-Clear-Host
+if ($Host.Name -eq 'ConsoleHost') {
+    try { Clear-Host } catch {}
+}
 $ErrorActionPreference = "Stop"
 
 # Ensure execution policy allows script execution for CurrentUser
 try {
     $currentUserPolicy = Get-ExecutionPolicy -Scope CurrentUser -ErrorAction SilentlyContinue
-    if ($currentUserPolicy -ne 'RemoteSigned' -and $currentUserPolicy -ne 'Unrestricted' -and $currentUserPolicy -ne 'Bypass') {
+    if ($currentUserPolicy -notin @('RemoteSigned', 'Unrestricted', 'Bypass')) {
         Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force -ErrorAction SilentlyContinue
         Write-Host "  OK   " -NoNewline -ForegroundColor Green; Write-Host "  ExecutionPolicy set to RemoteSigned for CurrentUser" -ForegroundColor White
     }
@@ -22,13 +24,13 @@ try {
 }
 
 # ── PowerShell Host Configuration ────────────────────────────────
-$Host.UI.RawUI.WindowTitle = "Just One Installer v2.5"
+try { $Host.UI.RawUI.WindowTitle = "Just One Installer v2.5" } catch {}
 
 # ── Color Functions ──────────────────────────────────────────────
-function Write-Log { Write-Host "  OK  " -NoNewline -ForegroundColor Green; Write-Host "  $args" -ForegroundColor White }
-function Write-Warn { Write-Host "  >>  " -NoNewline -ForegroundColor Yellow; Write-Host "  $args" -ForegroundColor White }
-function Write-Error { Write-Host "  !!  " -NoNewline -ForegroundColor Red; Write-Host "  $args" -ForegroundColor White }
-function Write-Info { Write-Host "  --  " -NoNewline -ForegroundColor Cyan; Write-Host "  $args" }
+function Write-Log   { Write-Host "  OK  " -NoNewline -ForegroundColor Green;  Write-Host "  $args" -ForegroundColor White }
+function Write-Warn  { Write-Host "  >>  " -NoNewline -ForegroundColor Yellow; Write-Host "  $args" -ForegroundColor White }
+function Write-Err   { Write-Host "  !!  " -NoNewline -ForegroundColor Red;    Write-Host "  $args" -ForegroundColor White }
+function Write-Info  { Write-Host "  --  " -NoNewline -ForegroundColor Cyan;   Write-Host "  $args" }
 function Write-Blank { Write-Host "" }
 
 # ── Section Header ────────────────────────────────────────────────
@@ -37,8 +39,8 @@ function Write-Section {
     $width = 56
     $line = "═" * $width
     $inner = $width - 2
-    $pad = [math]::Floor(($inner - $Title.Length) / 2)
-    $rpad = $inner - $Title.Length - $pad
+    $pad = [math]::Max(0, [math]::Floor(($inner - $Title.Length) / 2))
+    $rpad = [math]::Max(0, $inner - $Title.Length - $pad)
     $spacesL = " " * $pad
     $spacesR = " " * $rpad
 
@@ -72,41 +74,95 @@ function Get-SystemInfo {
     Write-Section "System Information"
 
     # CPU Info
-    $cpuInfo = Get-CimInstance Win32_Processor | Select-Object -First 1
-    $CPU_MODEL = $cpuInfo.Name.Trim()
-    $CPU_CORES = $cpuInfo.NumberOfLogicalProcessors
+    $CPU_MODEL = "Unknown CPU"
+    $CPU_CORES = [Environment]::ProcessorCount
+    try {
+        $cpuInfo = Get-CimInstance Win32_Processor -ErrorAction Stop | Select-Object -First 1
+        if ($cpuInfo -and $cpuInfo.Name) { $CPU_MODEL = $cpuInfo.Name.Trim() }
+        if ($cpuInfo -and $cpuInfo.NumberOfLogicalProcessors) { $CPU_CORES = [int]$cpuInfo.NumberOfLogicalProcessors }
+    } catch {}
 
     # RAM Info
-    $os = Get-CimInstance Win32_OperatingSystem
-    $RAM_GB = [math]::Round($os.TotalVisibleMemorySize / 1MB, 1)
-    $RAM_MB = [math]::Round($os.TotalVisibleMemorySize / 1KB, 0)
+    $RAM_GB = 8.0
+    $RAM_MB = 8192
+    try {
+        $os = Get-CimInstance Win32_OperatingSystem -ErrorAction Stop
+        if ($os -and $os.TotalVisibleMemorySize) {
+            $RAM_GB = [math]::Round($os.TotalVisibleMemorySize / 1MB, 1)
+            $RAM_MB = [math]::Round($os.TotalVisibleMemorySize / 1KB, 0)
+        }
+    } catch {}
 
-    # GPU Info
-    $GPU_VRAM = 0
+    # GPU Info (prefer nvidia-smi, then 64-bit registry qwMemorySize, then WMI AdapterRAM)
+    $GPU_VRAM = 0.0
     $GPU_NAME = "Not detected"
 
-    try {
-        $gpu = Get-CimInstance Win32_VideoController | Where-Object { $_.AdapterRAM -gt 0 } | Select-Object -First 1
-        if ($gpu) {
-            $GPU_NAME = $gpu.Name
-            $GPU_VRAM = [math]::Round($gpu.AdapterRAM / 1GB, 1)
-        }
-    }
-    catch {}
-
-    # Check for NVIDIA specifically via nvidia-smi
     if (Get-Command nvidia-smi -ErrorAction SilentlyContinue) {
-        $nvidiaInfo = nvidia-smi --query-gpu=name,memory.total --format=csv,noheader 2>$null
-        if ($nvidiaInfo) {
-            $nvidiaData = $nvidiaInfo -split ','
-            $GPU_NAME = $nvidiaData[0].Trim()
-            $GPU_VRAM = [math]::Round([int]($nvidiaData[1].Trim() -replace ' MiB', '') / 1024, 1)
-        }
+        try {
+            $nvidiaLines = @(nvidia-smi --query-gpu=name,memory.total --format=csv,noheader,nounits 2>$null)
+            foreach ($line in $nvidiaLines) {
+                $parts = $line -split ','
+                if ($parts.Count -ge 2) {
+                    $vramMiB = 0
+                    if ([int]::TryParse($parts[1].Trim(), [ref]$vramMiB)) {
+                        $vramGB = [math]::Round($vramMiB / 1024, 1)
+                        if ($vramGB -gt $GPU_VRAM) {
+                            $GPU_VRAM = $vramGB
+                            $GPU_NAME = $parts[0].Trim()
+                        }
+                    }
+                }
+            }
+        } catch {}
     }
 
-    # Disk Info
-    $disk = Get-PSDrive -Name (Get-Location).Drive.Name
-    $DISK_FREE = [math]::Round($disk.Free / 1GB, 1)
+    if ($GPU_VRAM -eq 0) {
+        try {
+            $regPath = "HKLM:\SYSTEM\ControlSet001\Control\Class\{4d36e968-e325-11ce-bfc1-08002be10318}\0*"
+            $adapters = Get-ItemProperty -Path $regPath -ErrorAction SilentlyContinue
+            foreach ($adapter in $adapters) {
+                $memBytes = $adapter.'HardwareInformation.qwMemorySize'
+                if ($memBytes -is [byte[]]) {
+                    $memBytes = [BitConverter]::ToUInt64($memBytes, 0)
+                }
+                if ($memBytes -and [double]$memBytes -gt 0) {
+                    $vramGB = [math]::Round([double]$memBytes / 1GB, 1)
+                    if ($vramGB -gt $GPU_VRAM) {
+                        $GPU_VRAM = $vramGB
+                        if ($adapter.'HardwareInformation.AdapterString') {
+                            $GPU_NAME = [string]$adapter.'HardwareInformation.AdapterString'
+                        } elseif ($adapter.DriverDesc) {
+                            $GPU_NAME = [string]$adapter.DriverDesc
+                        }
+                    }
+                }
+            }
+        } catch {}
+    }
+
+    if ($GPU_VRAM -eq 0) {
+        try {
+            $gpus = Get-CimInstance Win32_VideoController -ErrorAction Stop | Where-Object { $_.AdapterRAM -gt 0 }
+            foreach ($gpu in $gpus) {
+                $vramGB = [math]::Round($gpu.AdapterRAM / 1GB, 1)
+                if ($vramGB -gt $GPU_VRAM) {
+                    $GPU_VRAM = $vramGB
+                    $GPU_NAME = $gpu.Name
+                }
+            }
+        } catch {}
+    }
+
+    # Disk Info (safe fallback for UNC or non-filesystem drives)
+    $DISK_FREE = 0.0
+    try {
+        $driveName = (Get-Location).Drive.Name
+        if (-not $driveName -or -not (Get-PSDrive -Name $driveName -PSProvider FileSystem -ErrorAction SilentlyContinue)) {
+            $driveName = $env:SystemDrive.TrimEnd(':')
+        }
+        $disk = Get-PSDrive -Name $driveName -PSProvider FileSystem -ErrorAction Stop
+        $DISK_FREE = [math]::Round($disk.Free / 1GB, 1)
+    } catch {}
 
     Write-Host "  CPU        " -NoNewline -ForegroundColor White
     Write-Host "|  " -NoNewline -ForegroundColor DarkGray
@@ -161,7 +217,11 @@ function Configure-OllamaOptimization {
         $env:OLLAMA_FLASH_ATTENTION = "1"
         $env:OLLAMA_KEEP_ALIVE = "24h"
         Write-Log "Optimizations enabled: Flash Attention + 24h Model Keep-Alive"
-    } catch {}
+    } catch {
+        Write-Warn "Could not persist user environment variables; applied for current session."
+        $env:OLLAMA_FLASH_ATTENTION = "1"
+        $env:OLLAMA_KEEP_ALIVE = "24h"
+    }
 }
 
 # ─────────────────────────────────────────────────────────────────
@@ -182,6 +242,15 @@ function Get-OllamaPath {
     return $null
 }
 
+function Test-OllamaReady {
+    try {
+        $resp = Invoke-WebRequest -Uri "http://127.0.0.1:11434/api/tags" -UseBasicParsing -TimeoutSec 2 -ErrorAction Stop
+        return ($resp.StatusCode -eq 200)
+    } catch {
+        return $false
+    }
+}
+
 function Install-Ollama {
     Write-Section "Ollama Installation"
 
@@ -195,29 +264,46 @@ function Install-Ollama {
     $ollamaUrl = "https://ollama.com/download/OllamaSetup.exe"
     $installerPath = "$env:TEMP\OllamaSetup.exe"
 
-    Invoke-WebRequest -Uri $ollamaUrl -OutFile $installerPath
-    Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
-    Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
-
-    Write-Log "Ollama installed successfully"
+    try {
+        Invoke-WebRequest -Uri $ollamaUrl -OutFile $installerPath -UseBasicParsing
+        Start-Process -FilePath $installerPath -ArgumentList "/S" -Wait
+        Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
+        Write-Log "Ollama installed successfully"
+    } catch {
+        Remove-Item $installerPath -Force -ErrorAction SilentlyContinue
+        Write-Err "Failed to download or install Ollama: $($_.Exception.Message)"
+        exit 1
+    }
 }
 
 function Start-Ollama {
-    $ollamaProcess = Get-Process ollama -ErrorAction SilentlyContinue
-    if ($ollamaProcess) {
+    if (Test-OllamaReady) {
         Write-Log "Ollama server is already running"
         return
     }
 
-    Write-Warn "Starting Ollama background server..."
-    $ollamaPath = Get-OllamaPath
-    if (-not $ollamaPath) {
-        $ollamaPath = "ollama"
+    $ollamaProcess = Get-Process ollama -ErrorAction SilentlyContinue
+    if ($ollamaProcess) {
+        Write-Log "Ollama process detected; waiting for API..."
+    } else {
+        Write-Warn "Starting Ollama background server..."
+        $ollamaPath = Get-OllamaPath
+        if (-not $ollamaPath) {
+            Write-Err "Ollama executable not found. Please restart your terminal and run again."
+            exit 1
+        }
+        Start-Process -FilePath $ollamaPath -ArgumentList "serve" -WindowStyle Hidden
     }
 
-    Start-Process -FilePath $ollamaPath -ArgumentList "serve" -WindowStyle Hidden
-    Start-Sleep -Seconds 4
-    Write-Log "Ollama server started"
+    for ($attempt = 0; $attempt -lt 15; $attempt++) {
+        if (Test-OllamaReady) {
+            Write-Log "Ollama server is ready"
+            return
+        }
+        Start-Sleep -Seconds 1
+    }
+
+    Write-Warn "Ollama server started, API may still be warming up."
 }
 
 # ─────────────────────────────────────────────────────────────────
@@ -235,38 +321,48 @@ function Detect-Editor {
     )
 
     $script:SELECTED_EDITOR = $null
+    $script:EDITOR_FOUND = $false
     foreach ($ed in $editors) {
         if (Get-Command $ed.Cmd -ErrorAction SilentlyContinue) {
             $script:SELECTED_EDITOR = $ed
+            $script:EDITOR_FOUND = $true
             Write-Log "$($ed.Name) CLI found ($($ed.Cmd))"
             break
         }
     }
 
-    if (-not $script:SELECTED_EDITOR) {
+    if (-not $script:EDITOR_FOUND) {
         Write-Warn "No supported editor CLI found on PATH (checked code, cursor, code-insiders, codium)."
         Write-Host "  Please install VS Code (https://code.visualstudio.com) and ensure 'code' command is in PATH." -ForegroundColor DarkGray
         Write-Info "Configuration will still be generated for when you open your editor."
-        $script:SELECTED_EDITOR = @{ Name = "VS Code"; Cmd = "code" }
+        $script:SELECTED_EDITOR = @{ Name = "Not detected (VS Code/Cursor)"; Cmd = "code" }
     }
 }
 
 function Install-Continue {
+    if (-not $script:EDITOR_FOUND) {
+        Write-Warn "Skipping auto-extension install. Install Continue manually from the extension marketplace."
+        return
+    }
+
     $cmd = $script:SELECTED_EDITOR.Cmd
-    if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) {
-        Write-Warn "Could not run '$cmd --install-extension'. Install Continue manually from the extension marketplace."
-        return
-    }
+    try {
+        $extensions = & $cmd --list-extensions 2>$null
+        if ($extensions -match "Continue\.continue") {
+            Write-Log "Continue extension is already installed in $($script:SELECTED_EDITOR.Name)"
+            return
+        }
 
-    $extensions = & $cmd --list-extensions 2>$null
-    if ($extensions -match "Continue.continue") {
-        Write-Log "Continue extension is already installed in $($script:SELECTED_EDITOR.Name)"
-        return
+        Write-Warn "Installing Continue extension in $($script:SELECTED_EDITOR.Name)..."
+        & $cmd --install-extension Continue.continue
+        if ($LASTEXITCODE -eq 0) {
+            Write-Log "Continue extension installed"
+        } else {
+            Write-Warn "Could not auto-install Continue extension (exit code $LASTEXITCODE). You can install it manually inside your editor."
+        }
+    } catch {
+        Write-Warn "Could not auto-install Continue extension: $($_.Exception.Message)"
     }
-
-    Write-Warn "Installing Continue extension in $($script:SELECTED_EDITOR.Name)..."
-    & $cmd --install-extension Continue.continue
-    Write-Log "Continue extension installed"
 }
 
 # ─────────────────────────────────────────────────────────────────
@@ -280,9 +376,14 @@ function Get-OllamaModels {
     try {
         $response = Invoke-WebRequest -Uri "https://ollama.com/library" -UseBasicParsing -TimeoutSec 8
         $content = $response.Content
-        $pattern = 'href="/library/([^"]+)"'
-        $matches = [regex]::Matches($content, $pattern)
-        $OLLAMA_MODELS = ($matches | ForEach-Object { $_.Groups[1].Value } | Sort-Object -Unique) -join "`n"
+        $pattern = 'href="/library/([a-zA-Z0-9_.:-]+)"'
+        $rxMatches = [regex]::Matches($content, $pattern)
+        $familyList = $rxMatches | ForEach-Object { $_.Groups[1].Value } | Where-Object { $_ } | Sort-Object -Unique
+        if ($familyList -and $familyList.Count -gt 0) {
+            $OLLAMA_MODELS = $familyList -join "`n"
+        } else {
+            throw "Empty catalog"
+        }
     }
     catch {
         Write-Warn "Could not reach ollama.com -- using built-in model list"
@@ -297,31 +398,33 @@ function Get-OllamaModels {
 function Get-ModelSizeGB {
     param([string]$Model)
 
-    $pattern = '[\d]+\.?[\d]*(?=b)'
-    $matches = [regex]::Matches($Model, $pattern, 'IgnoreCase')
+    $pattern = '(\d+(?:\.\d+)?)(?=b(?:\b|$|[-_]))'
+    $rxMatches = [regex]::Matches($Model, $pattern, 'IgnoreCase')
 
-    if ($matches.Count -eq 0) {
-        if ($Model -match "llama3.2") { return 2 }
-        if ($Model -match "qwen2.5-coder") { return 4 }
-        if ($Model -match "deepseek-r1") { return 4 }
-        return 4
+    if ($rxMatches.Count -gt 0) {
+        $raw = $rxMatches[$rxMatches.Count - 1].Groups[1].Value
+        $params = 0.0
+        if ([double]::TryParse($raw, [System.Globalization.NumberStyles]::Float, [System.Globalization.CultureInfo]::InvariantCulture, [ref]$params) -and $params -gt 0) {
+            $size = [math]::Ceiling($params * 0.55)
+            if ($size -lt 1) { $size = 1 }
+            return [int]$size
+        }
     }
 
-    $raw = $matches[$matches.Count - 1].Value
-    $intPart = ($raw -split '\.')[0]
-    if (-not $intPart -or [int]$intPart -eq 0) { $intPart = 1 }
-
-    $params = [int]$intPart
-    $size = [math]::Ceiling($params * 0.55)
-    if ($size -lt 1) { $size = 1 }
-    return $size
+    # Realistic default tag estimates for tagless library families
+    if ($Model -match "qwq")          { return 18 }
+    if ($Model -match "phi4")         { return 9 }
+    if ($Model -match "gemma2")       { return 6 }
+    if ($Model -match "llama3\.2")    { return 2 }
+    if ($Model -match "llama3\.1|llama3\.3|mistral|codellama|llava|qwen2\.5-coder|deepseek-r1") { return 5 }
+    return 4
 }
 
 function Get-ModelTag {
     param([string]$Model)
 
     if ($Model -match "coder|code|starcoder") { return "Coder" }
-    if ($Model -match "deepseek-r1|qwq") { return "Reasoning" }
+    if ($Model -match "deepseek-r1|qwq")      { return "Reasoning" }
     if ($Model -match "llava|vision|minicpm-v") { return "Vision" }
     return "General"
 }
@@ -362,7 +465,6 @@ function Select-ModeAndModels {
     $script:EMBEDDING_MODEL = "nomic-embed-text"
 
     if ([string]::IsNullOrWhiteSpace($modeChoice) -or $modeChoice.Trim() -eq "1") {
-        # Quick Preset
         Write-Blank
         Write-Log "Applying Quick Recommended Preset for $EFFECTIVE_MEM GB $MEM_SOURCE..."
 
@@ -421,13 +523,17 @@ function Select-ModeAndModels {
     Write-Host "  Press Enter to skip manual models and use the default coder fallback." -ForegroundColor DarkGray
     Write-Blank
     Write-Host "  Your choice: " -NoNewline -ForegroundColor Cyan
-    $input = Read-Host
+    $userInput = Read-Host
 
-    if (-not [string]::IsNullOrWhiteSpace($input) -and $input -ne "0") {
-        $numbers = $input -split ',' | ForEach-Object { $_.Trim() }
+    if (-not [string]::IsNullOrWhiteSpace($userInput) -and $userInput.Trim() -ne "0") {
+        $numbers = $userInput -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" }
         foreach ($num in $numbers) {
-            if ($modelMap.ContainsKey([int]$num)) {
-                $script:SELECTED += $modelMap[[int]$num]
+            $parsed = 0
+            if ([int]::TryParse($num, [ref]$parsed) -and $modelMap.ContainsKey($parsed)) {
+                $chosen = $modelMap[$parsed]
+                if ($script:SELECTED -notcontains $chosen) {
+                    $script:SELECTED += $chosen
+                }
             } else {
                 Write-Warn "Invalid entry: $num -- skipped"
             }
@@ -439,12 +545,30 @@ function Select-ModeAndModels {
 #  STEP 7  |  Download Models (Selected + Fallback + Embedding)
 # ─────────────────────────────────────────────────────────────────
 
+function Test-OllamaModelInstalled {
+    param(
+        [string]$OllamaPath,
+        [string]$ModelName
+    )
+    $target = if ($ModelName -match ':') { $ModelName } else { "${ModelName}:latest" }
+    try {
+        $lines = & $OllamaPath list 2>$null
+        foreach ($line in $lines) {
+            $col = ($line -split '\s+')[0]
+            if ($col -eq $target -or $col -eq $ModelName) {
+                return $true
+            }
+        }
+    } catch {}
+    return $false
+}
+
 function Install-AllModels {
     Write-Section "Downloading AI Models"
 
     $ollamaPath = Get-OllamaPath
     if (-not $ollamaPath) {
-        Write-Error "Ollama executable not found. Please restart your terminal and run again."
+        Write-Err "Ollama executable not found. Please restart your terminal and run again."
         exit 1
     }
 
@@ -454,15 +578,18 @@ function Install-AllModels {
     if ($SELECTED.Count -gt 0) {
         foreach ($m in $SELECTED) {
             try {
-                $installed = & $ollamaPath list 2>$null | Select-String "^$m(\s|:)"
-                if ($installed) {
+                if (Test-OllamaModelInstalled -OllamaPath $ollamaPath -ModelName $m) {
                     Write-Log "$m -- already installed"
                     $script:SUCCESSFUL_MODELS += $m
                 } else {
                     Write-Warn "Pulling $m ..."
                     & $ollamaPath pull $m
-                    Write-Log "$m -- installed"
-                    $script:SUCCESSFUL_MODELS += $m
+                    if ($LASTEXITCODE -eq 0) {
+                        Write-Log "$m -- installed"
+                        $script:SUCCESSFUL_MODELS += $m
+                    } else {
+                        Write-Warn "Failed to pull $m -- skipped"
+                    }
                 }
             } catch {
                 Write-Warn "Failed to pull $m -- skipped"
@@ -474,13 +601,16 @@ function Install-AllModels {
     Write-Blank
     Write-Info "Checking Tab-Autocomplete model ($FALLBACK_MODEL)..."
     try {
-        $installed = & $ollamaPath list 2>$null | Select-String "^$FALLBACK_MODEL(\s|:)"
-        if ($installed) {
+        if (Test-OllamaModelInstalled -OllamaPath $ollamaPath -ModelName $FALLBACK_MODEL) {
             Write-Log "$FALLBACK_MODEL -- already installed"
         } else {
             Write-Warn "Pulling tab-autocomplete model: $FALLBACK_MODEL ..."
             & $ollamaPath pull $FALLBACK_MODEL
-            Write-Log "$FALLBACK_MODEL -- installed"
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log "$FALLBACK_MODEL -- installed"
+            } else {
+                Write-Warn "Could not pull $FALLBACK_MODEL"
+            }
         }
     } catch {
         Write-Warn "Could not pull $FALLBACK_MODEL"
@@ -490,16 +620,19 @@ function Install-AllModels {
     Write-Blank
     Write-Info "Checking Codebase RAG Embedding model ($EMBEDDING_MODEL)..."
     try {
-        $installed = & $ollamaPath list 2>$null | Select-String "^$EMBEDDING_MODEL(\s|:)"
-        if ($installed) {
+        if (Test-OllamaModelInstalled -OllamaPath $ollamaPath -ModelName $EMBEDDING_MODEL) {
             Write-Log "$EMBEDDING_MODEL -- already installed"
         } else {
             Write-Warn "Pulling embedding model: $EMBEDDING_MODEL (274 MB) for @codebase RAG..."
             & $ollamaPath pull $EMBEDDING_MODEL
-            Write-Log "$EMBEDDING_MODEL -- installed"
+            if ($LASTEXITCODE -eq 0) {
+                Write-Log "$EMBEDDING_MODEL -- installed"
+            } else {
+                Write-Warn "Could not pull $EMBEDDING_MODEL. Codebase indexing may need manual setup."
+            }
         }
     } catch {
-        Write-Warn "Could not pull $EMBEDDING_MODEL. Codebase indexing may use remote provider."
+        Write-Warn "Could not pull $EMBEDDING_MODEL. Codebase indexing may need manual setup."
     }
 
     # Build final model list
@@ -512,7 +645,7 @@ function Install-AllModels {
 }
 
 # ─────────────────────────────────────────────────────────────────
-#  STEP 8  |  Write Continue Configuration & Rules (Pure YAML)
+#  STEP 8  |  Write Continue Configuration & Rules (Pure YAML v1)
 # ─────────────────────────────────────────────────────────────────
 
 function Set-ContinueConfig {
@@ -526,24 +659,27 @@ function Set-ContinueConfig {
     $configPath = "$configDir\config.yaml"
     $rulesPath = "$configDir\.continuerules"
 
-    # Build YAML models block
+    # Build YAML models block (Continue schema v1)
     $modelsYamlLines = @()
+    $hasFallback = $false
     foreach ($m in $FINAL_MODELS) {
         if ($m -eq $FALLBACK_MODEL) {
-            $modelsYamlLines += "  - name: $m`n    provider: ollama`n    model: $m`n    roles: [autocomplete]"
+            $hasFallback = $true
+            $modelsYamlLines += "  - name: $m`n    provider: ollama`n    model: $m`n    roles:`n      - chat`n      - edit`n      - apply`n      - autocomplete"
         } else {
-            $modelsYamlLines += "  - name: $m`n    provider: ollama`n    model: $m`n    roles: [chat, edit]"
+            $modelsYamlLines += "  - name: $m`n    provider: ollama`n    model: $m`n    roles:`n      - chat`n      - edit`n      - apply"
         }
     }
 
-    # Always ensure autocomplete has the fallback model
-    if (-not ($FINAL_MODELS -contains $FALLBACK_MODEL)) {
-        $modelsYamlLines += "  - name: $FALLBACK_MODEL`n    provider: ollama`n    model: $FALLBACK_MODEL`n    roles: [autocomplete]"
+    if (-not $hasFallback) {
+        $modelsYamlLines += "  - name: $FALLBACK_MODEL`n    provider: ollama`n    model: $FALLBACK_MODEL`n    roles:`n      - autocomplete"
     }
+
+    # Embedding model with role: embed for @codebase RAG
+    $modelsYamlLines += "  - name: $EMBEDDING_MODEL`n    provider: ollama`n    model: $EMBEDDING_MODEL`n    roles:`n      - embed"
 
     $modelsBlock = $modelsYamlLines -join "`n`n"
 
-    # Clean Pure YAML Configuration
     $configYaml = @"
 name: Local AI Config
 version: 1.0.0
@@ -551,15 +687,6 @@ schema: v1
 
 models:
 $modelsBlock
-
-embeddingsProvider:
-  provider: ollama
-  model: $EMBEDDING_MODEL
-
-tabAutocompleteModel:
-  title: Tab Autocomplete
-  provider: ollama
-  model: $FALLBACK_MODEL
 
 context:
   - provider: code
@@ -569,33 +696,12 @@ context:
   - provider: problems
   - provider: folder
   - provider: codebase
-
-tabAutocomplete:
-  disable: false
-
-slashCommands:
-  - name: edit
-    description: Edit selected code
-  - name: test
-    description: Generate unit tests for selected code
-  - name: refactor
-    description: Refactor code for cleanliness, performance, and best practices
-  - name: fix
-    description: Detect bugs, syntax errors, and security issues
-  - name: explain
-    description: Explain the highlighted code in detail
-  - name: comment
-    description: Add comprehensive docstrings and comments
-  - name: share
-    description: Export conversation
-  - name: cmd
-    description: Generate shell command
 "@
 
-    Set-Content -Path $configPath -Value $configYaml -Encoding UTF8
+    $utf8NoBom = [System.Text.UTF8Encoding]::new($false)
+    [System.IO.File]::WriteAllText($configPath, $configYaml, $utf8NoBom)
     Write-Log "Config written -- $configPath"
 
-    # Generate Developer Rules
     $rulesContent = @"
 # Local AI Development Rules
 - Write clean, modular, modern, and well-typed code.
@@ -603,7 +709,7 @@ slashCommands:
 - Follow idioms and conventions of the target programming language.
 - Do not leave unfinished placeholder comments like '// TODO' without implementation.
 "@
-    Set-Content -Path $rulesPath -Value $rulesContent -Encoding UTF8
+    [System.IO.File]::WriteAllText($rulesPath, $rulesContent, $utf8NoBom)
     Write-Log "Developer rules written -- $rulesPath"
 }
 
@@ -613,13 +719,16 @@ slashCommands:
 
 function Open-Editor {
     Write-Section "Launching Editor"
-    $cmd = $script:SELECTED_EDITOR.Cmd
-
-    if (Get-Command $cmd -ErrorAction SilentlyContinue) {
+    if ($script:EDITOR_FOUND) {
+        $cmd = $script:SELECTED_EDITOR.Cmd
         Write-Warn "Launching $($script:SELECTED_EDITOR.Name)..."
-        Start-Process $cmd -ArgumentList "." -WindowStyle Normal
-        Start-Sleep -Seconds 2
-        Write-Log "$($script:SELECTED_EDITOR.Name) launched in current directory"
+        try {
+            Start-Process $cmd -ArgumentList "." -WindowStyle Normal
+            Start-Sleep -Seconds 2
+            Write-Log "$($script:SELECTED_EDITOR.Name) launched in current directory"
+        } catch {
+            Write-Info "Open $($script:SELECTED_EDITOR.Name) manually and open the Continue panel."
+        }
     } else {
         Write-Info "Open your editor manually and open the Continue panel."
     }
@@ -629,14 +738,22 @@ function Show-Summary {
     Write-Section "Setup Complete"
 
     Write-Host "  Configured Models:" -ForegroundColor White
+    $fallbackListed = $false
     foreach ($m in $FINAL_MODELS) {
         Write-Host "    • " -NoNewline -ForegroundColor Cyan
         Write-Host "$m" -NoNewline -ForegroundColor Green
-        Write-Host " [chat, edit]" -ForegroundColor DarkGray
+        if ($m -eq $FALLBACK_MODEL) {
+            $fallbackListed = $true
+            Write-Host " [chat, edit, tab-autocomplete]" -ForegroundColor DarkGray
+        } else {
+            Write-Host " [chat, edit]" -ForegroundColor DarkGray
+        }
     }
-    Write-Host "    • " -NoNewline -ForegroundColor Cyan
-    Write-Host "$FALLBACK_MODEL" -NoNewline -ForegroundColor Green
-    Write-Host " [tab-autocomplete]" -ForegroundColor DarkGray
+    if (-not $fallbackListed) {
+        Write-Host "    • " -NoNewline -ForegroundColor Cyan
+        Write-Host "$FALLBACK_MODEL" -NoNewline -ForegroundColor Green
+        Write-Host " [tab-autocomplete]" -ForegroundColor DarkGray
+    }
 
     Write-Host "    • " -NoNewline -ForegroundColor Cyan
     Write-Host "$EMBEDDING_MODEL" -NoNewline -ForegroundColor Green
@@ -653,8 +770,7 @@ function Show-Summary {
 
     Write-Host "  Ollama Status  " -NoNewline -ForegroundColor White
     Write-Host "|  " -NoNewline -ForegroundColor DarkGray
-    $ollamaRunning = Get-Process ollama -ErrorAction SilentlyContinue
-    if ($ollamaRunning) {
+    if (Test-OllamaReady) {
         Write-Host "Running" -ForegroundColor Green
     } else {
         Write-Host "Not Running" -ForegroundColor Red
@@ -681,8 +797,12 @@ function Open-GitHub {
     Write-Host "  ╚════════════════════════════════════════════════════════╝" -ForegroundColor Cyan
     Write-Blank
 
+    Write-Host "  Star/visit the project on GitHub? [y/N]: " -NoNewline -ForegroundColor DarkGray
     try {
-        Start-Process $url
+        $openChoice = Read-Host
+        if ($openChoice -match '^[yY]') {
+            Start-Process $url
+        }
     } catch {}
 }
 
@@ -710,5 +830,9 @@ Open-Editor
 Show-Summary
 Open-GitHub
 
-Write-Host "  Press any key to exit..." -ForegroundColor DarkGray
-$null = $Host.UI.RawUI.ReadKey([System.Management.Automation.Host.ReadKeyOptions]::NoEcho -bor [System.Management.Automation.Host.ReadKeyOptions]::IncludeKeyDown)
+if ([Environment]::UserInteractive) {
+    try {
+        Write-Host "  Press any key to exit..." -ForegroundColor DarkGray
+        $null = $Host.UI.RawUI.ReadKey([System.Management.Automation.Host.ReadKeyOptions]::NoEcho -bor [System.Management.Automation.Host.ReadKeyOptions]::IncludeKeyDown)
+    } catch {}
+}

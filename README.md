@@ -18,11 +18,11 @@
 
 ## Author
 
-# **Moshiur Rahman Deap**
+### **Moshiur Rahman Deap**
 
 > Full-stack Developer | AI Automation Builder
 
-- **Portfolio:** [moshiur.pro](https://moshiur.pro)  
+- **Portfolio:** [moshiurrahman.online](https://moshiurrahman.online)  
 - **GitHub:** [github.com/moshiurrahmandeap11](https://github.com/moshiurrahmandeap11)
 - **LinkedIn:** [linkedin.com/in/moshiurrahmandeap](https://linkedin.com/in/moshiurrahmandeap)
 
@@ -82,9 +82,10 @@ You can choose between **1-Click Quick Setup** or **Custom Selection**:
 
 | Hardware Tier | Primary Chat/Edit Model | Fast Tab-Autocomplete | Codebase RAG |
 | :--- | :--- | :--- | :--- |
-| **8 GB RAM** | `qwen2.5-coder:3b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
-| **16 GB RAM / 8GB VRAM** | `qwen2.5-coder:7b` + `deepseek-r1:7b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
-| **24 GB+ RAM / 12GB+ VRAM**| `qwen2.5-coder:14b` + `deepseek-r1:8b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
+| **< 8 GB RAM** | `qwen2.5-coder:3b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
+| **8 GB RAM / 8 GB VRAM** | `qwen2.5-coder:7b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
+| **12 GB+ VRAM / 16 GB RAM** | `qwen2.5-coder:7b` + `deepseek-r1:7b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
+| **24 GB+ RAM / 24 GB+ VRAM**| `qwen2.5-coder:14b` + `deepseek-r1:8b` | `qwen2.5-coder:1.5b` | `nomic-embed-text` |
 
 ### 🛠️ Mode 2: Custom Selection
 Browse an interactive numbered CLI table categorized by role (`[Coder]`, `[Reasoning]`, `[Vision]`, `[General]`) and enter comma-separated numbers (e.g. `1,3`).
@@ -113,26 +114,30 @@ models:
   - name: qwen2.5-coder:7b
     provider: ollama
     model: qwen2.5-coder:7b
-    roles: [chat, edit]
+    roles:
+      - chat
+      - edit
+      - apply
 
   - name: deepseek-r1:7b
     provider: ollama
     model: deepseek-r1:7b
-    roles: [chat, edit]
+    roles:
+      - chat
+      - edit
+      - apply
 
   - name: qwen2.5-coder:1.5b
     provider: ollama
     model: qwen2.5-coder:1.5b
-    roles: [autocomplete]
+    roles:
+      - autocomplete
 
-embeddingsProvider:
-  provider: ollama
-  model: nomic-embed-text
-
-tabAutocompleteModel:
-  title: Tab Autocomplete
-  provider: ollama
-  model: qwen2.5-coder:1.5b
+  - name: nomic-embed-text
+    provider: ollama
+    model: nomic-embed-text
+    roles:
+      - embed
 
 context:
   - provider: code
@@ -142,27 +147,6 @@ context:
   - provider: problems
   - provider: folder
   - provider: codebase
-
-tabAutocomplete:
-  disable: false
-
-slashCommands:
-  - name: edit
-    description: Edit selected code
-  - name: test
-    description: Generate unit tests for selected code
-  - name: refactor
-    description: Refactor code for cleanliness, performance, and best practices
-  - name: fix
-    description: Detect bugs, syntax errors, and security issues
-  - name: explain
-    description: Explain the highlighted code in detail
-  - name: comment
-    description: Add comprehensive docstrings and comments
-  - name: share
-    description: Export conversation
-  - name: cmd
-    description: Generate shell command
 ```
 
 ---

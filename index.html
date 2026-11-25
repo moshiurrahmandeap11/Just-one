@@ -79,11 +79,11 @@
         <a href="#install" class="hover:text-cyan-400 transition-colors">Install</a>
         <a href="#calculator" class="hover:text-cyan-400 transition-colors">PC Calculator</a>
         <a href="#features" class="hover:text-cyan-400 transition-colors">Features</a>
-        <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" class="hover:text-cyan-400 transition-colors">GitHub</a>
+        <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="hover:text-cyan-400 transition-colors">GitHub</a>
       </div>
 
       <div class="flex items-center gap-3">
-        <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium transition-all hover:border-cyan-500/40">
+        <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium transition-all hover:border-cyan-500/40">
           <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
           <span>Star on GitHub</span>
         </a>
@@ -210,17 +210,18 @@
             <select id="gpu-select" onchange="calcHardware()" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-400">
               <option value="none">CPU / Integrated GPU</option>
               <option value="apple">Apple Silicon (M1/M2/M3/M4)</option>
-              <option value="nvidia_mid" selected>NVIDIA RTX (6GB - 8GB VRAM)</option>
-              <option value="nvidia_high">NVIDIA RTX (12GB - 16GB+ VRAM)</option>
+              <option value="nvidia_mid">NVIDIA RTX (8GB VRAM)</option>
+              <option value="nvidia_high" selected>NVIDIA RTX (12GB - 16GB VRAM)</option>
+              <option value="nvidia_ultra">NVIDIA RTX (24GB+ VRAM)</option>
             </select>
           </div>
 
           <div class="p-4 rounded-xl bg-cyan-950/20 border border-cyan-500/20 text-xs text-slate-300 space-y-1">
             <div class="flex justify-between font-medium">
               <span>Safety Threshold:</span>
-              <span class="text-cyan-400 font-bold" id="calc-budget">10.4 GB (65% Budget)</span>
+              <span class="text-cyan-400 font-bold" id="calc-budget">10 GB (65% Budget)</span>
             </div>
-            <p class="text-slate-400">The script guarantees your OS retains enough free memory to prevent freezing or crashes.</p>
+            <p class="text-slate-400">When discrete VRAM is 8 GB+, the installer budgets against VRAM; otherwise it uses System/Unified RAM.</p>
           </div>
         </div>
 
@@ -261,11 +262,11 @@
 
           <div class="pt-2 border-t border-white/10">
             <div class="flex justify-between text-xs text-slate-400 mb-1.5 font-medium">
-              <span>Estimated Inference Load</span>
-              <span id="load-text" class="text-cyan-400 font-bold">5.8 GB / 10.4 GB</span>
+              <span>Peak Model Load</span>
+              <span id="load-text" class="text-cyan-400 font-bold">4.7 GB / 7 GB</span>
             </div>
             <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-              <div id="load-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full transition-all duration-300" style="width: 55%;"></div>
+              <div id="load-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full transition-all duration-300" style="width: 67%;"></div>
             </div>
           </div>
         </div>
@@ -359,11 +360,11 @@
       </div>
 
       <div class="text-sm text-slate-400 text-center sm:text-right">
-        Created with ❤️ by <a href="https://github.com/moshiurrahmandeap11" target="_blank" class="text-cyan-400 hover:underline font-semibold">Moshiur Rahman Deap</a>
+        Created with ❤️ by <a href="https://github.com/moshiurrahmandeap11" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline font-semibold">Moshiur Rahman Deap</a>
         <div class="text-xs text-slate-500 mt-1">
-          <a href="https://moshiurrahman.online" target="_blank" class="hover:text-slate-300">Portfolio</a> • 
-          <a href="https://linkedin.com/in/moshiurrahmandeap" target="_blank" class="hover:text-slate-300">LinkedIn</a> • 
-          <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" class="hover:text-slate-300">GitHub Repo</a>
+          <a href="https://moshiurrahman.online" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">Portfolio</a> • 
+          <a href="https://linkedin.com/in/moshiurrahmandeap" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">LinkedIn</a> • 
+          <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">GitHub Repo</a>
         </div>
       </div>
     </div>
@@ -393,15 +394,36 @@
       });
     }
 
+    function showCopiedFeedback() {
+      const copyText = document.getElementById('copy-text');
+      copyText.innerText = 'Copied!';
+      setTimeout(() => {
+        copyText.innerText = 'Copy';
+      }, 2000);
+    }
+
+    function fallbackCopyText(text) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.setAttribute('readonly', '');
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try {
+        document.execCommand('copy');
+        showCopiedFeedback();
+      } catch (_) {}
+      document.body.removeChild(ta);
+    }
+
     function copyCommand() {
       const text = commands[currentPlatform];
-      navigator.clipboard.writeText(text).then(() => {
-        const copyText = document.getElementById('copy-text');
-        copyText.innerText = 'Copied!';
-        setTimeout(() => {
-          copyText.innerText = 'Copy';
-        }, 2000);
-      });
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showCopiedFeedback).catch(() => fallbackCopyText(text));
+      } else {
+        fallbackCopyText(text);
+      }
     }
 
     let selectedRam = 16;
@@ -418,8 +440,25 @@
       }
 
       const gpu = document.getElementById('gpu-select').value;
-      let budget = Math.floor(selectedRam * 0.65);
-      document.getElementById('calc-budget').innerText = budget + ' GB (Safe 65% Limit)';
+      let effectiveMem = selectedRam;
+      let memSource = selectedRam + ' GB System RAM';
+
+      if (gpu === 'nvidia_ultra') {
+        effectiveMem = 24;
+        memSource = '24 GB+ VRAM';
+      } else if (gpu === 'nvidia_high') {
+        effectiveMem = 12;
+        memSource = '12 GB+ VRAM';
+      } else if (gpu === 'nvidia_mid') {
+        effectiveMem = 8;
+        memSource = '8 GB VRAM';
+      } else if (gpu === 'apple') {
+        effectiveMem = selectedRam;
+        memSource = selectedRam + ' GB Unified';
+      }
+
+      const budget = Math.max(1, Math.floor(effectiveMem * 0.65));
+      document.getElementById('calc-budget').innerText = budget + ' GB (65% of ' + memSource + ')';
 
       const resChat = document.getElementById('res-chat');
       const speedBadge = document.getElementById('speed-badge');
@@ -427,22 +466,26 @@
       const loadBar = document.getElementById('load-bar');
 
       let modelName = 'qwen2.5-coder:7b';
-      let modelSize = 5;
-      let speed = 'Fast (30-45 tok/s)';
-      let badgeClass = 'px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      let modelSize = 4.7;
+      let speed = 'Blazing (35-50 tok/s)';
+      const badgeClass = 'px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
 
-      if (selectedRam <= 8) {
-        modelName = 'qwen2.5-coder:3b';
-        modelSize = 2.5;
-        speed = gpu === 'none' ? 'Moderate (15-20 tok/s)' : 'Fast (35-50 tok/s)';
-      } else if (selectedRam >= 24) {
+      if (effectiveMem >= 24) {
         modelName = 'qwen2.5-coder:14b + deepseek-r1:8b';
-        modelSize = 13;
+        modelSize = 9.0;
         speed = gpu === 'none' ? 'Moderate (12-18 tok/s)' : 'Blazing (40-60 tok/s)';
-      } else {
+      } else if (effectiveMem >= 12) {
         modelName = 'qwen2.5-coder:7b + deepseek-r1:7b';
-        modelSize = 9;
+        modelSize = 4.7;
         speed = gpu === 'none' ? 'Good (18-25 tok/s)' : 'Blazing (35-50 tok/s)';
+      } else if (effectiveMem >= 8) {
+        modelName = 'qwen2.5-coder:7b';
+        modelSize = 4.7;
+        speed = gpu === 'none' ? 'Moderate (15-20 tok/s)' : 'Fast (35-50 tok/s)';
+      } else {
+        modelName = 'qwen2.5-coder:3b';
+        modelSize = 1.9;
+        speed = gpu === 'none' ? 'Good (20-30 tok/s)' : 'Fast (45-60 tok/s)';
       }
 
       resChat.innerText = modelName;

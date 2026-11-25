@@ -9,7 +9,9 @@
 #  License: MIT
 # ──────────────────────────────────────────────────────────────────
 
-clear
+if [ -t 1 ]; then
+    clear || true
+fi
 set -e
 
 # ── Terminal Styling ──────────────────────────────────────────────
@@ -30,6 +32,18 @@ error() { echo -e " ${BOLD}${RED} !! ${RESET}  ${BOLD}$1${RESET}"; }
 info()  { echo -e " ${BOLD}${CYAN} -- ${RESET}  $1"; }
 blank() { echo ""; }
 
+# Safe TTY input reader (works even when piped via `curl ... | bash`)
+read_tty() {
+    local _var_name="$1"
+    local _val=""
+    if [ -r /dev/tty ]; then
+        IFS= read -r _val < /dev/tty || _val=""
+    elif [ -t 0 ]; then
+        IFS= read -r _val || _val=""
+    fi
+    eval "$_var_name=\$_val"
+}
+
 # ── Section Header ────────────────────────────────────────────────
 section() {
     local title="$1"
@@ -38,10 +52,12 @@ section() {
     line=$(printf '═%.0s' $(seq 1 $width))
     local inner=$(( width - 2 ))
     local pad=$(( (inner - ${#title}) / 2 ))
-    local lpad rpad spaces_l spaces_r
-    spaces_l=$(printf ' %.0s' $(seq 1 $pad))
-    rpad=$(( inner - ${#title} - pad ))
-    spaces_r=$(printf ' %.0s' $(seq 1 $rpad))
+    [ "$pad" -lt 0 ] && pad=0
+    local rpad=$(( inner - ${#title} - pad ))
+    [ "$rpad" -lt 0 ] && rpad=0
+    local spaces_l="" spaces_r=""
+    [ "$pad" -gt 0 ] && spaces_l=$(printf '%*s' "$pad" '')
+    [ "$rpad" -gt 0 ] && spaces_r=$(printf '%*s' "$rpad" '')
 
     blank
     echo -e "${BOLD}${CYAN}  ╔${line}╗${RESET}"
@@ -71,6 +87,7 @@ SELECTED=()
 SUCCESSFUL_MODELS=()
 FINAL_MODELS=()
 MODEL_MAP=()
+EDITOR_FOUND=false
 
 # ─────────────────────────────────────────────────────────────────
 #  STEP 1  |  Ensure Homebrew is available
@@ -78,6 +95,12 @@ MODEL_MAP=()
 
 ensure_homebrew() {
     section "Checking Homebrew"
+
+    if [ -x "/opt/homebrew/bin/brew" ] && ! command -v brew &>/dev/null; then
+        eval "$(/opt/homebrew/bin/brew shellenv)"
+    elif [ -x "/usr/local/bin/brew" ] && ! command -v brew &>/dev/null; then
+        eval "$(/usr/local/bin/brew shellenv)"
+    fi
 
     if command -v brew &>/dev/null; then
         log "Homebrew is already installed"
@@ -110,6 +133,7 @@ detect_system() {
     RAM_BYTES=$(sysctl -n hw.memsize 2>/dev/null || echo 8589934592)
     RAM_MB=$(( RAM_BYTES / 1024 / 1024 ))
     RAM_GB=$(( RAM_MB / 1024 ))
+    [ "$RAM_GB" -lt 1 ] && RAM_GB=8
 
     GPU_NAME="Apple Metal / Unified Memory"
     if system_profiler SPDisplaysDataType 2>/dev/null | grep -q "Chipset Model"; then
@@ -117,12 +141,13 @@ detect_system() {
     fi
 
     # macOS portable disk space check
-    DISK_FREE=$(df -h "$HOME" 2>/dev/null | awk 'NR==2 {print $4}' || echo "N/A")
+    DISK_FREE=$(df -Pk "$HOME" 2>/dev/null | awk 'NR==2 {printf "%d", $4 / 1024 / 1024}' || true)
+    [ -z "$DISK_FREE" ] && DISK_FREE="N/A"
 
     echo -e "  ${BOLD}${WHITE}CPU        ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${CPU_MODEL}${RESET}  ${DIM}(${CPU_CORES} cores)${RESET}"
     echo -e "  ${BOLD}${WHITE}RAM        ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${RAM_GB} GB${RESET}  ${DIM}(${RAM_MB} MB)${RESET}"
     echo -e "  ${BOLD}${WHITE}GPU        ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${GPU_NAME}${RESET}"
-    echo -e "  ${BOLD}${WHITE}Disk Free  ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${DISK_FREE}${RESET}"
+    echo -e "  ${BOLD}${WHITE}Disk Free  ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${DISK_FREE} GB${RESET}"
     blank
 
     # On Apple Silicon / macOS, Unified Memory allows efficient shared memory
@@ -134,6 +159,10 @@ detect_system() {
 #  STEP 3  |  Install and start Ollama
 # ─────────────────────────────────────────────────────────────────
 
+ollama_ready() {
+    curl -fsS --max-time 2 "http://127.0.0.1:11434/api/tags" >/dev/null 2>&1
+}
+
 install_ollama() {
     section "Ollama Installation"
 
@@ -143,21 +172,43 @@ install_ollama() {
     fi
 
     warn "Installing Ollama via Homebrew..."
-    brew install ollama
-    log "Ollama installed successfully"
+    if brew install ollama; then
+        log "Ollama installed successfully"
+    else
+        error "Ollama installation failed."
+        exit 1
+    fi
 }
 
 start_ollama() {
-    if pgrep -x ollama &>/dev/null; then
-        log "Ollama server is already running"
+    export OLLAMA_FLASH_ATTENTION=1
+    export OLLAMA_KEEP_ALIVE="24h"
+    if command -v launchctl &>/dev/null; then
+        launchctl setenv OLLAMA_FLASH_ATTENTION "1" 2>/dev/null || true
+        launchctl setenv OLLAMA_KEEP_ALIVE "24h" 2>/dev/null || true
+    fi
+
+    if ollama_ready; then
+        log "Ollama server is already running (Flash Attention + 24h Keep-Alive)"
         return
     fi
 
-    warn "Starting Ollama background server..."
-    export OLLAMA_KEEP_ALIVE="24h"
-    ollama serve > /dev/null 2>&1 &
-    sleep 4
-    log "Ollama server started"
+    if ! pgrep -x ollama &>/dev/null; then
+        warn "Starting Ollama background server..."
+        nohup ollama serve > /dev/null 2>&1 &
+    fi
+
+    local attempt=0
+    while [ "$attempt" -lt 15 ]; do
+        if ollama_ready; then
+            log "Ollama server is ready (Flash Attention + 24h Keep-Alive)"
+            return
+        fi
+        sleep 1
+        attempt=$(( attempt + 1 ))
+    done
+
+    warn "Ollama server started, API may still be warming up."
 }
 
 # ─────────────────────────────────────────────────────────────────
@@ -170,27 +221,34 @@ detect_editor() {
     if command -v code &>/dev/null; then
         EDITOR_NAME="VS Code"
         EDITOR_CMD="code"
+        EDITOR_FOUND=true
+        log "${EDITOR_NAME} CLI detected (${EDITOR_CMD})"
     elif command -v cursor &>/dev/null; then
         EDITOR_NAME="Cursor"
         EDITOR_CMD="cursor"
+        EDITOR_FOUND=true
+        log "${EDITOR_NAME} CLI detected (${EDITOR_CMD})"
     elif command -v code-insiders &>/dev/null; then
         EDITOR_NAME="VS Code Insiders"
         EDITOR_CMD="code-insiders"
+        EDITOR_FOUND=true
+        log "${EDITOR_NAME} CLI detected (${EDITOR_CMD})"
     elif command -v codium &>/dev/null; then
         EDITOR_NAME="VSCodium"
         EDITOR_CMD="codium"
+        EDITOR_FOUND=true
+        log "${EDITOR_NAME} CLI detected (${EDITOR_CMD})"
     else
-        EDITOR_NAME="VS Code"
+        EDITOR_NAME="Not detected (VS Code/Cursor)"
         EDITOR_CMD="code"
+        EDITOR_FOUND=false
         warn "No supported code editor CLI found on PATH (checked code, cursor, code-insiders, codium)."
         info "Please install VS Code from https://code.visualstudio.com"
     fi
-
-    log "${EDITOR_NAME} CLI detected (${EDITOR_CMD})"
 }
 
 install_continue() {
-    if ! command -v "$EDITOR_CMD" &>/dev/null; then
+    if [ "$EDITOR_FOUND" != true ]; then
         warn "Skipping auto-extension install. You can install Continue manually in your editor."
         return
     fi
@@ -203,8 +261,11 @@ install_continue() {
     fi
 
     warn "Installing Continue extension in ${EDITOR_NAME}..."
-    "$EDITOR_CMD" --install-extension Continue.continue
-    log "Continue extension installed"
+    if "$EDITOR_CMD" --install-extension Continue.continue; then
+        log "Continue extension installed"
+    else
+        warn "Could not auto-install Continue extension. You can install it manually inside ${EDITOR_NAME}."
+    fi
 }
 
 # ─────────────────────────────────────────────────────────────────
@@ -240,25 +301,45 @@ fetch_models() {
 
 get_model_size_gb() {
     local model="$1"
+    local est
+    est=$(printf '%s\n' "$model" | awk '{
+        s = tolower($0)
+        last = ""
+        while (match(s, /[0-9]+(\.[0-9]+)?b([^a-z0-9]|$)/)) {
+            tok = substr(s, RSTART, RLENGTH)
+            sub(/b.*/, "", tok)
+            last = tok
+            s = substr(s, RSTART + RLENGTH)
+        }
+        if (last != "") {
+            val = int((last * 0.55) + 0.999999)
+            if (val < 1) val = 1
+            print val
+        }
+    }')
+
+    if [ -n "$est" ]; then
+        echo "$est"
+        return
+    fi
+
     case "$model" in
-        *14b*|*13b*) echo 8 ;;
-        *7b*|*8b*)   echo 5 ;;
-        *3b*|*3.8b*) echo 2 ;;
-        *1.5b*|*1b*) echo 1 ;;
-        *llama3.2*)  echo 2 ;;
-        *coder*)     echo 5 ;;
-        *deepseek*)  echo 5 ;;
-        *)           echo 4 ;;
+        *qwq*)                                                                   echo 18 ;;
+        *phi4*)                                                                  echo 9 ;;
+        *gemma2*)                                                                echo 6 ;;
+        *llama3.2*)                                                              echo 2 ;;
+        *llama3.1*|*llama3.3*|*mistral*|*codellama*|*llava*|*coder*|*deepseek*)  echo 5 ;;
+        *)                                                                       echo 4 ;;
     esac
 }
 
 get_model_tag() {
     local model="$1"
     case "$model" in
-        *coder*|*code*|*starcoder*) echo "Coder" ;;
-        *deepseek-r1*|*qwq*)       echo "Reasoning" ;;
-        *llava*|*vision*)          echo "Vision" ;;
-        *)                         echo "General" ;;
+        *coder*|*code*|*starcoder*)    echo "Coder" ;;
+        *deepseek-r1*|*qwq*)          echo "Reasoning" ;;
+        *llava*|*vision*|*minicpm-v*) echo "Vision" ;;
+        *)                            echo "General" ;;
     esac
 }
 
@@ -286,14 +367,15 @@ select_mode_and_models() {
     blank
 
     echo -e "  ${BOLD}${WHITE}Your choice [1/2, default: 1]: ${RESET}\c"
-    read -r mode_choice
+    read_tty mode_choice
+    mode_choice=$(echo "$mode_choice" | xargs)
 
     if [ -z "$mode_choice" ] || [ "$mode_choice" = "1" ]; then
         blank
         log "Applying Quick Recommended Preset for ${EFFECTIVE_MEM} GB Unified Memory..."
         if [ "$EFFECTIVE_MEM" -ge 24 ]; then
             SELECTED=("qwen2.5-coder:14b" "deepseek-r1:8b")
-        elif [ "$EFFECTIVE_MEM" -ge 16 ]; then
+        elif [ "$EFFECTIVE_MEM" -ge 12 ]; then
             SELECTED=("qwen2.5-coder:7b" "deepseek-r1:7b")
         elif [ "$EFFECTIVE_MEM" -ge 8 ]; then
             SELECTED=("qwen2.5-coder:7b")
@@ -328,14 +410,21 @@ select_mode_and_models() {
     echo -e "  ${DIM}Press Enter to skip manual models and use the default coder fallback.${RESET}"
     blank
     echo -e "  ${BOLD}${CYAN}Your choice: ${RESET}\c"
-    read -r input
+    read_tty input
+    input=$(echo "$input" | xargs)
 
     if [ -n "$input" ] && [ "$input" != "0" ]; then
         IFS=',' read -ra numbers <<< "$input"
         for n in "${numbers[@]}"; do
             n=$(echo "$n" | xargs)
-            if [ -n "${MODEL_MAP[$n]}" ]; then
-                SELECTED+=("${MODEL_MAP[$n]}")
+            [ -z "$n" ] && continue
+            if [[ "$n" =~ ^[0-9]+$ ]] && [ -n "${MODEL_MAP[$n]}" ]; then
+                local chosen="${MODEL_MAP[$n]}"
+                local already=false
+                for existing in "${SELECTED[@]}"; do
+                    [ "$existing" = "$chosen" ] && already=true && break
+                done
+                [ "$already" = false ] && SELECTED+=("$chosen")
             else
                 warn "Invalid entry: $n -- skipped"
             fi
@@ -347,13 +436,27 @@ select_mode_and_models() {
 #  STEP 7  |  Install All Models (Selected + Fallback + Embedding)
 # ─────────────────────────────────────────────────────────────────
 
+is_model_installed() {
+    local model="$1"
+    local target="$model"
+    if [[ "$model" != *:* ]]; then
+        target="${model}:latest"
+    fi
+    ollama list 2>/dev/null | awk -v m="$model" -v t="$target" 'NR>1 && ($1 == t || $1 == m) {found=1; exit} END{exit !found}'
+}
+
 install_all_models() {
     section "Downloading AI Models"
+
+    if ! command -v ollama &>/dev/null; then
+        error "Ollama command not found. Please restart your terminal and run again."
+        exit 1
+    fi
 
     # 1. Pull Selected Models
     if [ ${#SELECTED[@]} -gt 0 ]; then
         for model in "${SELECTED[@]}"; do
-            if ollama list 2>/dev/null | grep -q "^$model\b"; then
+            if is_model_installed "$model"; then
                 log "$model -- already installed"
                 SUCCESSFUL_MODELS+=("$model")
             else
@@ -371,23 +474,29 @@ install_all_models() {
     # 2. Guarantee Tab-Autocomplete Fallback Model
     blank
     info "Checking Tab-Autocomplete model (${FALLBACK_MODEL})..."
-    if ollama list 2>/dev/null | grep -q "^${FALLBACK_MODEL}\b"; then
+    if is_model_installed "${FALLBACK_MODEL}"; then
         log "${FALLBACK_MODEL} -- already installed"
     else
         warn "Installing tab-autocomplete fallback -- ${FALLBACK_MODEL} ..."
-        ollama pull "${FALLBACK_MODEL}"
-        log "${FALLBACK_MODEL} -- installed"
+        if ollama pull "${FALLBACK_MODEL}"; then
+            log "${FALLBACK_MODEL} -- installed"
+        else
+            warn "Could not pull ${FALLBACK_MODEL}"
+        fi
     fi
 
     # 3. Pull Codebase Embedding Model
     blank
     info "Checking Codebase RAG Embedding model (${EMBEDDING_MODEL})..."
-    if ollama list 2>/dev/null | grep -q "^${EMBEDDING_MODEL}\b"; then
+    if is_model_installed "${EMBEDDING_MODEL}"; then
         log "${EMBEDDING_MODEL} -- already installed"
     else
         warn "Installing codebase embedding model -- ${EMBEDDING_MODEL} (274 MB) ..."
-        ollama pull "${EMBEDDING_MODEL}" || warn "Could not pull embedding model"
-        log "${EMBEDDING_MODEL} -- installed"
+        if ollama pull "${EMBEDDING_MODEL}"; then
+            log "${EMBEDDING_MODEL} -- installed"
+        else
+            warn "Could not pull ${EMBEDDING_MODEL}. Codebase indexing may need manual setup."
+        fi
     fi
 
     # Build final list
@@ -400,7 +509,7 @@ install_all_models() {
 }
 
 # ─────────────────────────────────────────────────────────────────
-#  STEP 8  |  Write Continue Configuration & Rules (Pure YAML)
+#  STEP 8  |  Write Continue Configuration & Rules (Pure YAML v1)
 # ─────────────────────────────────────────────────────────────────
 
 set_continue_config() {
@@ -427,7 +536,11 @@ EOF
   - name: $model
     provider: ollama
     model: $model
-    roles: [autocomplete]
+    roles:
+      - chat
+      - edit
+      - apply
+      - autocomplete
 
 EOF
         else
@@ -435,7 +548,10 @@ EOF
   - name: $model
     provider: ollama
     model: $model
-    roles: [chat, edit]
+    roles:
+      - chat
+      - edit
+      - apply
 
 EOF
         fi
@@ -446,20 +562,18 @@ EOF
   - name: $FALLBACK_MODEL
     provider: ollama
     model: $FALLBACK_MODEL
-    roles: [autocomplete]
+    roles:
+      - autocomplete
 
 EOF
     fi
 
     cat >> "$config_file" << EOF
-embeddingsProvider:
-  provider: ollama
-  model: $EMBEDDING_MODEL
-
-tabAutocompleteModel:
-  title: Tab Autocomplete
-  provider: ollama
-  model: $FALLBACK_MODEL
+  - name: $EMBEDDING_MODEL
+    provider: ollama
+    model: $EMBEDDING_MODEL
+    roles:
+      - embed
 
 context:
   - provider: code
@@ -469,27 +583,6 @@ context:
   - provider: problems
   - provider: folder
   - provider: codebase
-
-tabAutocomplete:
-  disable: false
-
-slashCommands:
-  - name: edit
-    description: Edit selected code
-  - name: test
-    description: Generate unit tests for selected code
-  - name: refactor
-    description: Refactor code for cleanliness, performance, and best practices
-  - name: fix
-    description: Detect bugs, syntax errors, and security issues
-  - name: explain
-    description: Explain the highlighted code in detail
-  - name: comment
-    description: Add comprehensive docstrings and comments
-  - name: share
-    description: Export conversation
-  - name: cmd
-    description: Generate shell command
 EOF
 
     log "Config written -- $config_file"
@@ -510,13 +603,13 @@ EOF
 
 open_editor() {
     section "Launching Editor"
-    if command -v "$EDITOR_CMD" &>/dev/null; then
+    if [ "$EDITOR_FOUND" = true ]; then
         warn "Opening ${EDITOR_NAME}..."
-        "$EDITOR_CMD" . &
+        "$EDITOR_CMD" . >/dev/null 2>&1 &
         sleep 2
         log "${EDITOR_NAME} launched"
     else
-        info "Open ${EDITOR_NAME} manually."
+        info "Open your editor manually and open the Continue panel."
     fi
 }
 
@@ -524,16 +617,24 @@ print_summary() {
     section "Setup Complete"
 
     echo -e "  ${BOLD}${WHITE}Configured Models:${RESET}"
+    local fallback_listed=false
     for m in "${FINAL_MODELS[@]}"; do
-        echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${m}${RESET}  ${DIM}[chat, edit]${RESET}"
+        if [ "$m" = "$FALLBACK_MODEL" ]; then
+            fallback_listed=true
+            echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${m}${RESET}  ${DIM}[chat, edit, tab-autocomplete]${RESET}"
+        else
+            echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${m}${RESET}  ${DIM}[chat, edit]${RESET}"
+        fi
     done
-    echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${FALLBACK_MODEL}${RESET}  ${DIM}[tab-autocomplete]${RESET}"
+    if [ "$fallback_listed" = false ]; then
+        echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${FALLBACK_MODEL}${RESET}  ${DIM}[tab-autocomplete]${RESET}"
+    fi
     echo -e "    ${BOLD}${CYAN}•${RESET} ${BOLD}${GREEN}${EMBEDDING_MODEL}${RESET}  ${DIM}[@codebase RAG]${RESET}"
 
     blank
     echo -e "  ${BOLD}${WHITE}Editor         ${RESET}${DIM}|${RESET}  ${BOLD}${CYAN}${EDITOR_NAME}${RESET}"
     echo -e "  ${BOLD}${WHITE}Config File    ${RESET}${DIM}|${RESET}  ${DIM}$HOME/.continue/config.yaml${RESET}"
-    echo -e "  ${BOLD}${WHITE}Ollama Status  ${RESET}${DIM}|${RESET}  $(pgrep -x ollama &>/dev/null \
+    echo -e "  ${BOLD}${WHITE}Ollama Status  ${RESET}${DIM}|${RESET}  $(ollama_ready \
               && echo -e "${BOLD}${GREEN}Running${RESET}" \
               || echo -e "${BOLD}${RED}Not Running${RESET}")"
     blank
@@ -553,8 +654,12 @@ open_github() {
     echo -e "${BOLD}${CYAN}  ╚════════════════════════════════════════════════════════╝${RESET}"
     blank
 
-    if command -v open &>/dev/null; then
-        open "$url" 2>/dev/null &
+    if [ -r /dev/tty ] && command -v open &>/dev/null; then
+        echo -e "  ${DIM}Star/visit the project on GitHub? [y/N]: ${RESET}\c"
+        read_tty open_choice
+        if [[ "$open_choice" =~ ^[yY] ]]; then
+            open "$url" >/dev/null 2>&1 &
+        fi
     fi
 }
 
