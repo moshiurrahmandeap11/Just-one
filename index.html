@@ -3,19 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Just One — Zero-Config Local AI for VS Code & Cursor</title>
-  <meta name="description" content="One-script local AI setup for VS Code and Cursor. Installs Ollama, downloads optimized coding models, configures Continue with Codebase RAG, completely automatically." />
-  
+  <title>Just One — Local AI Setup for VS Code &amp; Cursor</title>
+  <meta name="description" content="One-command local AI setup for VS Code, Cursor, VS Code Insiders, and VSCodium. Installs Ollama, downloads models sized for your hardware, and configures Continue." />
+
   <!-- Open Graph -->
-  <meta property="og:title" content="Just One — Zero-Config Local AI for VS Code & Cursor" />
-  <meta property="og:description" content="One command to turn your IDE into an AI powerhouse with Ollama, Continue, and Codebase RAG." />
+  <meta property="og:title" content="Just One — Local AI Setup for VS Code &amp; Cursor" />
+  <meta property="og:description" content="One-command local AI setup with Ollama, Continue, and local codebase embeddings." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://one.moshiur.pro/" />
 
   <!-- Fonts & Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -23,17 +23,8 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
-            mono: ['"Fira Code"', 'monospace'],
-          },
-          colors: {
-            brand: {
-              cyan: '#06b6d4',
-              emerald: '#10b981',
-              dark: '#0a0d14',
-              surface: '#111724',
-              border: '#1f293d',
-            }
+            sans: ['"Inter"', 'system-ui', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
           }
         }
       }
@@ -41,233 +32,203 @@
   </script>
   <style>
     body {
-      background-color: #080b11;
-      color: #e2e8f0;
-    }
-    .glow-cyan {
-      box-shadow: 0 0 50px -10px rgba(6, 182, 212, 0.25);
-    }
-    .gradient-border {
-      background: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 100%);
-    }
-    .code-glow {
-      text-shadow: 0 0 12px rgba(6, 182, 212, 0.4);
+      background-color: #09090b;
+      color: #e4e4e7;
     }
   </style>
 </head>
-<body class="font-sans antialiased selection:bg-cyan-500/20 selection:text-cyan-300">
-
-  <!-- Background Gradients -->
-  <div class="fixed inset-0 pointer-events-none -z-10 overflow-hidden">
-    <div class="absolute -top-40 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-cyan-500/10 blur-[130px] rounded-full"></div>
-    <div class="absolute top-[30rem] -left-40 w-[600px] h-[400px] bg-emerald-500/10 blur-[120px] rounded-full"></div>
-    <div class="absolute top-[50rem] -right-40 w-[600px] h-[500px] bg-blue-600/10 blur-[140px] rounded-full"></div>
-  </div>
+<body class="font-sans font-normal antialiased selection:bg-zinc-700 selection:text-white">
 
   <!-- Navigation -->
-  <nav class="sticky top-0 z-50 backdrop-blur-md bg-[#080b11]/80 border-b border-white/5">
-    <div class="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+  <nav class="sticky top-0 z-50 bg-[#09090b]/90 backdrop-blur border-b border-zinc-800/80">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
       <div class="flex items-center gap-3">
-        <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 to-emerald-500 flex items-center justify-center font-bold text-black text-lg shadow-lg shadow-cyan-500/20">
+        <div class="w-7 h-7 rounded-md bg-zinc-100 text-zinc-950 flex items-center justify-center font-mono font-medium text-sm">
           1
         </div>
-        <span class="font-extrabold text-xl tracking-tight text-white">Just One</span>
-        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">v2.5</span>
+        <span class="font-medium text-base tracking-tight text-zinc-100">Just One</span>
+        <span class="px-2 py-0.5 rounded text-xs font-mono text-zinc-400 bg-zinc-900 border border-zinc-800">v2.5</span>
       </div>
 
-      <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-300">
-        <a href="#install" class="hover:text-cyan-400 transition-colors">Install</a>
-        <a href="#calculator" class="hover:text-cyan-400 transition-colors">PC Calculator</a>
-        <a href="#features" class="hover:text-cyan-400 transition-colors">Features</a>
-        <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="hover:text-cyan-400 transition-colors">GitHub</a>
+      <div class="hidden md:flex items-center gap-8 text-sm text-zinc-400">
+        <a href="#install" class="hover:text-zinc-100 transition-colors">Install</a>
+        <a href="#calculator" class="hover:text-zinc-100 transition-colors">Compatibility</a>
+        <a href="#setup-details" class="hover:text-zinc-100 transition-colors">What it does</a>
+        <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-100 transition-colors">GitHub</a>
       </div>
 
-      <div class="flex items-center gap-3">
-        <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-sm font-medium transition-all hover:border-cyan-500/40">
-          <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          <span>Star on GitHub</span>
-        </a>
-      </div>
+      <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 px-3.5 py-1.5 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-sm text-zinc-200 transition-colors">
+        <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        <span>GitHub</span>
+      </a>
     </div>
   </nav>
 
-  <!-- Hero Section -->
-  <header class="max-w-5xl mx-auto px-6 pt-20 pb-16 text-center">
-    <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-cyan-950/60 border border-cyan-500/30 text-cyan-300 text-xs font-semibold mb-8 shadow-inner">
-      <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-      Zero Setup • Local AI • Codebase RAG • Offline Private
-    </div>
+  <!-- Hero + Terminal -->
+  <header id="install" class="max-w-7xl mx-auto px-6 pt-16 pb-20">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+      <!-- Left: Title + Command -->
+      <div class="lg:col-span-6 space-y-6 pt-2">
+        <h1 class="text-3xl sm:text-5xl font-medium tracking-tight text-zinc-100 leading-[1.15]">
+          Local AI setup for your code editor in one command.
+        </h1>
 
-    <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight mb-6">
-      Supercharge Your Code Editor with <br class="hidden sm:inline" />
-      <span class="bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 bg-clip-text text-transparent">Just One</span> Command
-    </h1>
+        <p class="text-base text-zinc-400 leading-relaxed max-w-xl">
+          Installs Ollama, checks your RAM and GPU VRAM, pulls coding and embedding models that fit your hardware, and writes your Continue configuration.
+        </p>
 
-    <p class="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto font-normal leading-relaxed mb-10">
-      Installs Ollama, auto-detects your CPU/GPU/RAM, downloads the best coding models, configures the Continue extension with Codebase RAG, and opens your editor.
-    </p>
+        <!-- Install Command Card -->
+        <div class="bg-zinc-900/70 rounded-xl p-4 border border-zinc-800 space-y-3">
+          <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
+            <div class="flex gap-1.5" id="platform-tabs">
+              <button onclick="setPlatform('windows')" id="tab-windows" class="px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-950 transition-colors">
+                Windows
+              </button>
+              <button onclick="setPlatform('mac')" id="tab-mac" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors">
+                macOS
+              </button>
+              <button onclick="setPlatform('linux')" id="tab-linux" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors">
+                Linux
+              </button>
+            </div>
+            <span class="text-xs text-zinc-500 font-mono hidden sm:inline">PowerShell / bash</span>
+          </div>
 
-    <!-- Installation Command Box -->
-    <div id="install" class="max-w-2xl mx-auto bg-slate-900/90 rounded-2xl p-4 border border-white/10 shadow-2xl glow-cyan text-left">
-      <!-- Tabs -->
-      <div class="flex items-center justify-between border-b border-white/10 pb-3 mb-3">
-        <div class="flex gap-2" id="platform-tabs">
-          <button onclick="setPlatform('windows')" id="tab-windows" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500 text-black shadow transition-all">
-            Windows (PowerShell)
-          </button>
-          <button onclick="setPlatform('mac')" id="tab-mac" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all">
-            macOS
-          </button>
-          <button onclick="setPlatform('linux')" id="tab-linux" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all">
-            Linux
-          </button>
+          <div class="bg-[#09090b] rounded-lg px-3.5 py-3 flex items-center justify-between font-mono text-xs sm:text-sm border border-zinc-800/80">
+            <div class="flex items-center gap-2.5 overflow-x-auto py-0.5">
+              <span class="text-emerald-400 select-none" id="cmd-prefix">&gt;</span>
+              <code id="cmd-text" class="text-zinc-200 whitespace-nowrap">irm https://one.moshiur.pro/windows | iex</code>
+            </div>
+            <button onclick="copyCommand()" class="ml-3 shrink-0 flex items-center gap-1.5 px-2.5 py-1 rounded bg-zinc-800 hover:bg-zinc-700 text-xs text-zinc-200 transition-colors">
+              <svg id="copy-icon" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+              <span id="copy-text">Copy</span>
+            </button>
+          </div>
+
+          <div class="text-xs text-zinc-500 flex items-center justify-between pt-0.5">
+            <span>Supports VS Code, Cursor, VS Code Insiders, VSCodium</span>
+            <span class="hidden sm:inline font-mono">MIT License</span>
+          </div>
         </div>
-        <span class="text-xs text-slate-400 font-mono hidden sm:inline">Run in terminal</span>
       </div>
 
-      <!-- Command Area -->
-      <div class="relative bg-black/60 rounded-xl p-4 flex items-center justify-between font-mono text-sm border border-white/5 group">
-        <div class="flex items-center gap-3 overflow-x-auto py-1">
-          <span class="text-cyan-400 select-none font-bold" id="cmd-prefix">&gt;</span>
-          <code id="cmd-text" class="text-slate-100 whitespace-nowrap">irm https://one.moshiur.pro/windows | iex</code>
-        </div>
-        <button onclick="copyCommand()" class="ml-3 shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-all border border-white/10">
-          <svg id="copy-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
-          <span id="copy-text">Copy</span>
-        </button>
-      </div>
+      <!-- Right: Terminal Preview -->
+      <div class="lg:col-span-6">
+        <div class="rounded-xl bg-[#0d0d10] border border-zinc-800 overflow-hidden">
+          <div class="h-9 bg-zinc-900/90 px-4 flex items-center justify-between border-b border-zinc-800">
+            <div class="flex items-center gap-1.5">
+              <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+              <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
+            </div>
+            <span class="text-xs font-mono text-zinc-500">just-one — v2.5</span>
+            <div class="w-8"></div>
+          </div>
 
-      <div class="mt-3 flex items-center justify-between text-xs text-slate-400 px-1">
-        <span class="flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-emerald-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-          Supports VS Code, Cursor, VS Code Insiders, VSCodium
-        </span>
-        <span class="hidden sm:inline">100% Free & Open-Source</span>
+          <div class="p-5 font-mono text-xs text-zinc-300 space-y-1.5 leading-relaxed overflow-x-auto whitespace-nowrap">
+            <p class="text-cyan-400">╭───────────────────────────────────────────────────────────╮</p>
+            <p class="text-cyan-400">│ <span class="text-zinc-100">Just One v2.5 — Local AI &amp; Codebase RAG Automator</span>         │</p>
+            <p class="text-cyan-400">│ <span class="text-zinc-400">By Moshiur Rahman Deap  |  one.moshiur.pro</span>                │</p>
+            <p class="text-cyan-400">╰───────────────────────────────────────────────────────────╯</p>
+            <p class="text-zinc-500 pt-1">STEP 01/08 :: System Hardware &amp; Memory Profile</p>
+            <p class="text-zinc-400">  CPU       | <span class="text-zinc-200">AMD Ryzen / Apple Silicon</span> (12 threads)</p>
+            <p class="text-zinc-400">  RAM       | <span class="text-zinc-200">16.0 GB</span> (16384 MB)</p>
+            <p class="text-zinc-400">  Safe AI   | <span class="text-emerald-400">[███████████████░░░░░░░░░]</span> <span class="text-zinc-100">10 GB</span> (65% limit)</p>
+            <p class="pt-1"><span class="text-emerald-400">[OK]</span> Ollama API server online (127.0.0.1:11434)</p>
+            <p><span class="text-emerald-400">[OK]</span> VS Code &amp; Cursor detected -- Continue ready</p>
+            <p><span class="text-emerald-400">[OK]</span> Models: <span class="text-cyan-300">qwen2.5-coder:7b</span>, <span class="text-cyan-300">deepseek-r1:7b</span></p>
+            <p><span class="text-emerald-400">[OK]</span> Autocomplete: <span class="text-cyan-300">qwen2.5-coder:1.5b</span></p>
+            <p><span class="text-emerald-400">[OK]</span> Embeddings: <span class="text-cyan-300">nomic-embed-text</span> (@codebase)</p>
+            <p><span class="text-emerald-400">[OK]</span> Config written -&gt; ~/.continue/config.yaml</p>
+          </div>
+        </div>
       </div>
     </div>
   </header>
 
-  <!-- Interactive Terminal Mockup -->
-  <section class="max-w-4xl mx-auto px-6 mb-24">
-    <div class="rounded-2xl bg-[#0d121d] border border-white/10 shadow-2xl overflow-hidden">
-      <!-- Window Controls -->
-      <div class="h-10 bg-[#131926] px-4 flex items-center justify-between border-b border-white/5">
-        <div class="flex items-center gap-2">
-          <div class="w-3 h-3 rounded-full bg-red-500/80"></div>
-          <div class="w-3 h-3 rounded-full bg-yellow-500/80"></div>
-          <div class="w-3 h-3 rounded-full bg-green-500/80"></div>
-        </div>
-        <span class="text-xs font-mono text-slate-400 font-medium">Just One Installer v2.5 — Terminal</span>
-        <div class="w-10"></div>
-      </div>
-      
-      <!-- Terminal Output Content -->
-      <div class="p-6 font-mono text-xs sm:text-sm text-slate-300 space-y-1.5 leading-relaxed bg-black/40 overflow-x-auto">
-        <p class="text-cyan-400">╭────────────────────────────────────────────────────────────────╮</p>
-        <p class="text-cyan-400">│<span class="text-cyan-300 font-bold">  JUST ONE  //  LOCAL AI &amp; CODEBASE RAG AUTOMATOR  v2.5        </span>│</p>
-        <p class="text-cyan-400">│<span class="text-slate-300">  Created by Moshiur Rahman Deap     |  one.moshiur.pro        </span>│</p>
-        <p class="text-cyan-400">╰────────────────────────────────────────────────────────────────╯</p>
-        <p class="text-cyan-500 pt-2">╭─ <span class="text-cyan-300 font-bold">STEP 01/08</span> :: <span class="text-white font-semibold">System Hardware &amp; Memory Profile</span> ────────────────</p>
-        <p class="text-slate-400">  CPU       │ <span class="text-cyan-300">AMD Ryzen / Apple Silicon</span> (12 threads)</p>
-        <p class="text-slate-400">  RAM       │ <span class="text-cyan-300">16.0 GB</span> (16384 MB)</p>
-        <p class="text-slate-400">  Safe AI   │ <span class="text-emerald-400">[███████████████░░░░░░░░░]</span> <span class="text-white font-semibold">10 GB</span> (65% Limit)</p>
-        <p class="text-slate-300 pt-1"><span class="text-emerald-400 font-bold">  [OK] </span>Ollama API server online (Flash Attention + 24h Keep-Alive)</p>
-        <p class="text-slate-300"><span class="text-emerald-400 font-bold">  [OK] </span>VS Code &amp; Cursor detected -- Continue extension ready</p>
-        <p class="text-slate-300"><span class="text-emerald-400 font-bold">  [OK] </span>Express Preset: <span class="text-cyan-300">qwen2.5-coder:7b</span> + <span class="text-cyan-300">deepseek-r1:7b</span></p>
-        <p class="text-slate-300"><span class="text-emerald-400 font-bold">  [OK] </span>Installed <span class="text-cyan-300">qwen2.5-coder:1.5b</span> [tab-autocomplete]</p>
-        <p class="text-slate-300"><span class="text-emerald-400 font-bold">  [OK] </span>Verified <span class="text-cyan-300">nomic-embed-text</span> [@codebase RAG]</p>
-        <p class="text-slate-300"><span class="text-emerald-400 font-bold">  [OK] </span>Continue YAML v1 written -&gt; ~/.continue/config.yaml</p>
-        <p class="text-emerald-400 pt-2 font-semibold">  Ctrl+L Chat  |  Ctrl+I Inline Edit  |  @codebase Semantic Search</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- Interactive "Can My PC Run It?" Calculator -->
-  <section id="calculator" class="max-w-5xl mx-auto px-6 mb-24">
-    <div class="bg-gradient-to-b from-[#111726] to-[#0d131f] rounded-3xl p-8 sm:p-12 border border-white/10 shadow-2xl relative overflow-hidden">
-      <div class="text-center max-w-xl mx-auto mb-10">
-        <span class="text-xs font-bold tracking-wider uppercase text-cyan-400 bg-cyan-950/60 px-3 py-1 rounded-full border border-cyan-500/30">
-          Hardware Compatibility Matrix
-        </span>
-        <h2 class="text-3xl font-extrabold text-white mt-4 mb-2">Can My PC Run It?</h2>
-        <p class="text-slate-400 text-sm">Select your hardware to see the exact models and performance you'll get automatically.</p>
+  <!-- Hardware Calculator -->
+  <section id="calculator" class="max-w-7xl mx-auto px-6 pb-20">
+    <div class="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6 sm:p-10">
+      <div class="mb-8">
+        <h2 class="text-2xl font-medium text-zinc-100 mb-1.5">Hardware compatibility</h2>
+        <p class="text-sm text-zinc-400">Select your RAM and GPU to check which preset the installer picks for your machine.</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <!-- Controls -->
-        <div class="space-y-6">
+        <div class="lg:col-span-5 space-y-5">
           <div>
-            <label class="block text-sm font-semibold text-slate-300 mb-2">System Memory (RAM)</label>
+            <label class="block text-sm text-zinc-300 mb-2">System memory (RAM)</label>
             <div class="grid grid-cols-4 gap-2" id="ram-selector">
-              <button onclick="calcHardware(8)" class="ram-btn py-2.5 rounded-xl border border-white/10 text-sm font-semibold hover:border-cyan-500/50 bg-white/5 text-slate-300 transition-all">8 GB</button>
-              <button onclick="calcHardware(16)" class="ram-btn active py-2.5 rounded-xl border border-cyan-500 bg-cyan-500/20 text-cyan-300 font-bold text-sm shadow-md transition-all">16 GB</button>
-              <button onclick="calcHardware(24)" class="ram-btn py-2.5 rounded-xl border border-white/10 text-sm font-semibold hover:border-cyan-500/50 bg-white/5 text-slate-300 transition-all">24 GB</button>
-              <button onclick="calcHardware(32)" class="ram-btn py-2.5 rounded-xl border border-white/10 text-sm font-semibold hover:border-cyan-500/50 bg-white/5 text-slate-300 transition-all">32 GB+</button>
+              <button onclick="calcHardware(8)" class="ram-btn py-2 rounded-lg border border-zinc-800 text-sm bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition-colors">8 GB</button>
+              <button onclick="calcHardware(16)" class="ram-btn active py-2 rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-950 font-medium text-sm transition-colors">16 GB</button>
+              <button onclick="calcHardware(24)" class="ram-btn py-2 rounded-lg border border-zinc-800 text-sm bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition-colors">24 GB</button>
+              <button onclick="calcHardware(32)" class="ram-btn py-2 rounded-lg border border-zinc-800 text-sm bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition-colors">32 GB+</button>
             </div>
           </div>
 
           <div>
-            <label class="block text-sm font-semibold text-slate-300 mb-2">GPU Acceleration</label>
-            <select id="gpu-select" onchange="calcHardware()" class="w-full bg-slate-900 border border-white/10 rounded-xl px-4 py-3 text-sm text-slate-200 focus:outline-none focus:border-cyan-400">
+            <label class="block text-sm text-zinc-300 mb-2">GPU</label>
+            <select id="gpu-select" onchange="calcHardware()" class="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3.5 py-2.5 text-sm text-zinc-200 focus:outline-none focus:border-zinc-500">
               <option value="none">CPU / Integrated GPU</option>
-              <option value="apple">Apple Silicon (M1/M2/M3/M4)</option>
-              <option value="nvidia_mid">NVIDIA RTX (8GB VRAM)</option>
-              <option value="nvidia_high" selected>NVIDIA RTX (12GB - 16GB VRAM)</option>
-              <option value="nvidia_ultra">NVIDIA RTX (24GB+ VRAM)</option>
+              <option value="apple">Apple Silicon (Unified Memory)</option>
+              <option value="nvidia_mid">NVIDIA RTX (8 GB VRAM)</option>
+              <option value="nvidia_high" selected>NVIDIA RTX (12 GB - 16 GB VRAM)</option>
+              <option value="nvidia_ultra">NVIDIA RTX (24 GB+ VRAM)</option>
             </select>
           </div>
 
-          <div class="p-4 rounded-xl bg-cyan-950/20 border border-cyan-500/20 text-xs text-slate-300 space-y-1">
-            <div class="flex justify-between font-medium">
-              <span>Safety Threshold:</span>
-              <span class="text-cyan-400 font-bold" id="calc-budget">10 GB (65% Budget)</span>
+          <div class="p-3.5 rounded-lg bg-[#09090b] border border-zinc-800/80 text-xs text-zinc-400 space-y-1">
+            <div class="flex justify-between">
+              <span>65% memory limit</span>
+              <span class="text-zinc-200 font-mono" id="calc-budget">7 GB (65% of 12 GB+ VRAM)</span>
             </div>
-            <p class="text-slate-400">When discrete VRAM is 8 GB+, the installer budgets against VRAM; otherwise it uses System/Unified RAM.</p>
+            <p class="text-zinc-500">Uses discrete VRAM when 8 GB or higher, otherwise uses system or unified RAM.</p>
           </div>
         </div>
 
         <!-- Result Card -->
-        <div class="bg-black/50 rounded-2xl p-6 border border-white/10 space-y-5">
-          <div class="flex items-center justify-between pb-3 border-b border-white/10">
-            <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Auto-Configured Setup</span>
-            <span id="speed-badge" class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-              Blazing Fast (35-50 tok/s)
+        <div class="lg:col-span-7 bg-[#09090b] rounded-xl p-6 border border-zinc-800 space-y-5">
+          <div class="flex items-center justify-between pb-3 border-b border-zinc-800">
+            <span class="text-sm text-zinc-400">Configured preset</span>
+            <span id="mode-badge" class="px-2.5 py-0.5 rounded text-xs font-mono bg-zinc-900 text-zinc-300 border border-zinc-800">
+              12 GB+ VRAM
             </span>
           </div>
 
-          <div class="space-y-3">
-            <div class="flex items-start justify-between">
+          <div class="space-y-4">
+            <div class="flex items-center justify-between gap-4">
               <div>
-                <div class="text-xs text-slate-400 font-medium">Primary Chat & Coding Model</div>
-                <div class="text-base font-bold text-white font-mono" id="res-chat">qwen2.5-coder:7b</div>
+                <div class="text-xs text-zinc-500">Chat and edit</div>
+                <div class="text-sm sm:text-base text-zinc-100 font-mono" id="res-chat">qwen2.5-coder:7b + deepseek-r1:7b</div>
               </div>
-              <span class="text-xs px-2 py-1 bg-cyan-500/10 text-cyan-300 rounded font-semibold">Chat + Edit</span>
+              <span class="text-xs font-mono text-zinc-400 shrink-0">chat, edit, apply</span>
             </div>
 
-            <div class="flex items-start justify-between">
+            <div class="flex items-center justify-between gap-4">
               <div>
-                <div class="text-xs text-slate-400 font-medium">Tab-Autocomplete (FIM)</div>
-                <div class="text-base font-bold text-white font-mono" id="res-autocomplete">qwen2.5-coder:1.5b</div>
+                <div class="text-xs text-zinc-500">Tab autocomplete</div>
+                <div class="text-sm sm:text-base text-zinc-100 font-mono" id="res-autocomplete">qwen2.5-coder:1.5b</div>
               </div>
-              <span class="text-xs px-2 py-1 bg-purple-500/10 text-purple-300 rounded font-semibold">Sub-second Tab</span>
+              <span class="text-xs font-mono text-zinc-400 shrink-0">autocomplete</span>
             </div>
 
-            <div class="flex items-start justify-between">
+            <div class="flex items-center justify-between gap-4">
               <div>
-                <div class="text-xs text-slate-400 font-medium">Codebase RAG Embeddings</div>
-                <div class="text-base font-bold text-white font-mono" id="res-embedding">nomic-embed-text</div>
+                <div class="text-xs text-zinc-500">Codebase embeddings</div>
+                <div class="text-sm sm:text-base text-zinc-100 font-mono" id="res-embedding">nomic-embed-text</div>
               </div>
-              <span class="text-xs px-2 py-1 bg-emerald-500/10 text-emerald-300 rounded font-semibold">Semantic RAG</span>
+              <span class="text-xs font-mono text-zinc-400 shrink-0">embed</span>
             </div>
           </div>
 
-          <div class="pt-2 border-t border-white/10">
-            <div class="flex justify-between text-xs text-slate-400 mb-1.5 font-medium">
-              <span>Peak Model Load</span>
-              <span id="load-text" class="text-cyan-400 font-bold">4.7 GB / 7 GB</span>
+          <div class="pt-3 border-t border-zinc-800">
+            <div class="flex justify-between text-xs text-zinc-400 mb-2">
+              <span>Peak single-model load</span>
+              <span id="load-text" class="text-zinc-200 font-mono">4.7 GB / 7 GB</span>
             </div>
-            <div class="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-              <div id="load-bar" class="h-full bg-gradient-to-r from-cyan-400 to-emerald-400 rounded-full transition-all duration-300" style="width: 67%;"></div>
+            <div class="w-full h-1.5 rounded-full bg-zinc-800 overflow-hidden">
+              <div id="load-bar" class="h-full bg-emerald-500 rounded-full transition-all duration-300" style="width: 67%;"></div>
             </div>
           </div>
         </div>
@@ -275,98 +236,57 @@
     </div>
   </section>
 
-  <!-- Features Grid -->
-  <section id="features" class="max-w-6xl mx-auto px-6 mb-24">
-    <div class="text-center max-w-xl mx-auto mb-16">
-      <h2 class="text-3xl font-extrabold text-white mb-3">Why Developers Love Just One</h2>
-      <p class="text-slate-400 text-sm">Everything configured out-of-the-box so you can focus on building.</p>
+  <!-- What it sets up -->
+  <section id="setup-details" class="max-w-7xl mx-auto px-6 pb-20">
+    <div class="mb-8">
+      <h2 class="text-2xl font-medium text-zinc-100 mb-1.5">What the script sets up</h2>
+      <p class="text-sm text-zinc-400">Automated steps across Windows, macOS, and Linux.</p>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <!-- Feature 1 -->
-      <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-cyan-500/30 transition-all hover:-translate-y-1">
-        <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center font-bold mb-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-        </div>
-        <h3 class="text-lg font-bold text-white mb-2">Zero-Config Automation</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">
-          No manual Ollama commands, no yaml file editing, no extension searching. Run one line and start prompting.
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800">
+        <div class="text-xs font-mono text-zinc-500 mb-2">01 / Runtime</div>
+        <h3 class="text-base font-medium text-zinc-100 mb-1.5">Ollama &amp; GPU flags</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed">
+          Installs Ollama if missing, enables <code class="text-zinc-300 font-mono text-xs">OLLAMA_FLASH_ATTENTION=1</code> and <code class="text-zinc-300 font-mono text-xs">24h</code> keep-alive, and waits for port <code class="text-zinc-300 font-mono text-xs">11434</code>.
         </p>
       </div>
 
-      <!-- Feature 2 -->
-      <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-emerald-500/30 transition-all hover:-translate-y-1">
-        <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold mb-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"/></svg>
-        </div>
-        <h3 class="text-lg font-bold text-white mb-2">Codebase RAG Ready</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Pulls <code class="text-emerald-300 font-mono text-xs">nomic-embed-text</code> automatically so <code class="text-emerald-300 font-mono text-xs">@codebase</code> semantic search works instantly from day one.
+      <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800">
+        <div class="text-xs font-mono text-zinc-500 mb-2">02 / Models</div>
+        <h3 class="text-base font-medium text-zinc-100 mb-1.5">65% memory filtering</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed">
+          Reads RAM and VRAM, lets you choose Express presets or pick from the live Ollama catalog, and pulls <code class="text-zinc-300 font-mono text-xs">nomic-embed-text</code> for <code class="text-zinc-300 font-mono text-xs">@codebase</code>.
         </p>
       </div>
 
-      <!-- Feature 3 -->
-      <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-purple-500/30 transition-all hover:-translate-y-1">
-        <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center font-bold mb-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-        </div>
-        <h3 class="text-lg font-bold text-white mb-2">65% Memory Guard</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Estimates model weights using 4-bit quant math and fits them safely within 65% of memory to prevent OS freezes.
-        </p>
-      </div>
-
-      <!-- Feature 4 -->
-      <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-blue-500/30 transition-all hover:-translate-y-1">
-        <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center font-bold mb-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
-        </div>
-        <h3 class="text-lg font-bold text-white mb-2">Multi-Editor Support</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Works seamlessly with VS Code, Cursor AI, VS Code Insiders, and VSCodium.
-        </p>
-      </div>
-
-      <!-- Feature 5 -->
-      <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-yellow-500/30 transition-all hover:-translate-y-1">
-        <div class="w-10 h-10 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-yellow-400 flex items-center justify-center font-bold mb-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
-        </div>
-        <h3 class="text-lg font-bold text-white mb-2">Flash Attention &amp; Keep-Alive</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Enables GPU Flash Attention and 24h keep-alive so models never experience slow cold starts.
-        </p>
-      </div>
-
-      <!-- Feature 6 -->
-      <div class="p-6 rounded-2xl bg-slate-900/60 border border-white/5 hover:border-red-500/30 transition-all hover:-translate-y-1">
-        <div class="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center font-bold mb-4">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-        </div>
-        <h3 class="text-lg font-bold text-white mb-2">100% Private &amp; Air-Gapped</h3>
-        <p class="text-slate-400 text-sm leading-relaxed">
-          Zero subscriptions, zero API keys, zero cloud telemetry. Your proprietary code never leaves your local drive.
+      <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800">
+        <div class="text-xs font-mono text-zinc-500 mb-2">03 / Editor</div>
+        <h3 class="text-base font-medium text-zinc-100 mb-1.5">Continue YAML v1</h3>
+        <p class="text-sm text-zinc-400 leading-relaxed">
+          Installs <code class="text-zinc-300 font-mono text-xs">Continue.continue</code> across detected editors, backs up existing configs, writes <code class="text-zinc-300 font-mono text-xs">~/.continue/config.yaml</code>, and skips API-key onboarding.
         </p>
       </div>
     </div>
   </section>
 
   <!-- Footer -->
-  <footer class="border-t border-white/10 bg-[#06080d] py-12">
-    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-6">
+  <footer class="border-t border-zinc-800/80 py-8">
+    <div class="max-w-7xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-zinc-500">
       <div class="flex items-center gap-3">
-        <div class="w-7 h-7 rounded-lg bg-cyan-400 flex items-center justify-center font-bold text-black text-sm">1</div>
-        <span class="font-bold text-white">Just One Installer</span>
-        <span class="text-xs text-slate-500 font-mono">MIT License</span>
+        <span class="text-zinc-200 font-medium">Just One</span>
+        <span>·</span>
+        <span class="font-mono text-xs">MIT License</span>
       </div>
 
-      <div class="text-sm text-slate-400 text-center sm:text-right">
-        Engineered by <a href="https://github.com/moshiurrahmandeap11" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline font-semibold">Moshiur Rahman Deap</a>
-        <div class="text-xs text-slate-500 mt-1">
-          <a href="https://moshiur.pro" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">Portfolio</a> • 
-          <a href="https://linkedin.com/in/moshiurrahmandeap" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">LinkedIn</a> • 
-          <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">GitHub Repo</a>
-        </div>
+      <div class="flex flex-wrap items-center gap-4 text-xs sm:text-sm">
+        <span>By <a href="https://github.com/moshiurrahmandeap11" target="_blank" rel="noopener noreferrer" class="text-zinc-200 hover:underline">Moshiur Rahman Deap</a></span>
+        <span>·</span>
+        <a href="https://moshiur.pro" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-200 transition-colors">moshiur.pro</a>
+        <span>·</span>
+        <a href="https://linkedin.com/in/moshiurrahmandeap" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-200 transition-colors">LinkedIn</a>
+        <span>·</span>
+        <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="hover:text-zinc-200 transition-colors">GitHub</a>
       </div>
     </div>
   </footer>
@@ -388,16 +308,16 @@
       ['windows', 'mac', 'linux'].forEach(p => {
         const btn = document.getElementById('tab-' + p);
         if (p === platform) {
-          btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500 text-black shadow transition-all';
+          btn.className = 'px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-950 transition-colors';
         } else {
-          btn.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold text-slate-400 hover:text-white transition-all';
+          btn.className = 'px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors';
         }
       });
     }
 
     function showCopiedFeedback() {
       const copyText = document.getElementById('copy-text');
-      copyText.innerText = 'Copied!';
+      copyText.innerText = 'Copied';
       setTimeout(() => {
         copyText.innerText = 'Copy';
       }, 2000);
@@ -433,9 +353,9 @@
         selectedRam = ram;
         document.querySelectorAll('.ram-btn').forEach(btn => {
           if (btn.innerText.includes(ram + ' GB')) {
-            btn.className = 'ram-btn active py-2.5 rounded-xl border border-cyan-500 bg-cyan-500/20 text-cyan-300 font-bold text-sm shadow-md transition-all';
+            btn.className = 'ram-btn active py-2 rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-950 font-medium text-sm transition-colors';
           } else {
-            btn.className = 'ram-btn py-2.5 rounded-xl border border-white/10 text-sm font-semibold hover:border-cyan-500/50 bg-white/5 text-slate-300 transition-all';
+            btn.className = 'ram-btn py-2 rounded-lg border border-zinc-800 text-sm bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition-colors';
           }
         });
       }
@@ -460,38 +380,30 @@
 
       const budget = Math.max(1, Math.floor(effectiveMem * 0.65));
       document.getElementById('calc-budget').innerText = budget + ' GB (65% of ' + memSource + ')';
+      document.getElementById('mode-badge').innerText = memSource;
 
       const resChat = document.getElementById('res-chat');
-      const speedBadge = document.getElementById('speed-badge');
       const loadText = document.getElementById('load-text');
       const loadBar = document.getElementById('load-bar');
 
       let modelName = 'qwen2.5-coder:7b';
       let modelSize = 4.7;
-      let speed = 'Blazing (35-50 tok/s)';
-      const badgeClass = 'px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
 
       if (effectiveMem >= 24) {
         modelName = 'qwen2.5-coder:14b + deepseek-r1:8b';
         modelSize = 9.0;
-        speed = gpu === 'none' ? 'Moderate (12-18 tok/s)' : 'Blazing (40-60 tok/s)';
       } else if (effectiveMem >= 12) {
         modelName = 'qwen2.5-coder:7b + deepseek-r1:7b';
         modelSize = 4.7;
-        speed = gpu === 'none' ? 'Good (18-25 tok/s)' : 'Blazing (35-50 tok/s)';
       } else if (effectiveMem >= 8) {
         modelName = 'qwen2.5-coder:7b';
         modelSize = 4.7;
-        speed = gpu === 'none' ? 'Moderate (15-20 tok/s)' : 'Fast (35-50 tok/s)';
       } else {
         modelName = 'qwen2.5-coder:3b';
         modelSize = 1.9;
-        speed = gpu === 'none' ? 'Good (20-30 tok/s)' : 'Fast (45-60 tok/s)';
       }
 
       resChat.innerText = modelName;
-      speedBadge.innerText = speed;
-      speedBadge.className = badgeClass;
 
       const percent = Math.min(Math.round((modelSize / budget) * 100), 100);
       loadText.innerText = modelSize + ' GB / ' + budget + ' GB';
@@ -503,4 +415,3 @@
   </script>
 </body>
 </html>
-
