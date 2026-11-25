@@ -65,7 +65,7 @@ curl -fsSL https://one.moshiur.pro/linux | bash
 | 2 | **Ollama Runtime & Optimizations**: Sets `OLLAMA_FLASH_ATTENTION=1` & `24h` keep-alive, installs Ollama, and waits for the local API. |
 | 3 | **All-Editor Auto-Setup**: Detects **VS Code**, **Cursor**, **VS Code Insiders**, and **VSCodium** simultaneously and installs Continue in all of them. |
 | 4 | **Live Model Discovery**: Fetches model families from `ollama.com/library` and filters them by memory footprint. |
-| 5 | **5s Express Countdown or Custom Picker**: Hands-free 5-second auto-start (or interactive `↑/↓` arrow menu for custom selection). |
+| 5 | **Express or Custom Mode Picker**: Interactive `↑/↓` arrow menu to pick 1-click Express Setup or Custom Model Selection (set `JUST_ONE_AUTO=1` for hands-free mode). |
 | 6 | **Models + Tab-Autocomplete + RAG**: Pulls your coding/reasoning models, `qwen2.5-coder:1.5b` (FIM autocomplete), and `nomic-embed-text` (`@codebase` RAG). |
 | 7 | **Safe Backup & YAML v1 Config**: Backs up any existing `config.yaml` and generates pure `schema: v1` `~/.continue/config.yaml` + `.continuerules`. |
 | 8 | **Live RAG Health Check & Launch**: Verifies local embeddings via `/api/embeddings` and launches your editor ready to code. |

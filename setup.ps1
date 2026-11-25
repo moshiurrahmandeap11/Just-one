@@ -531,66 +531,44 @@ function Show-ModeSelector {
         Write-Host "  Select installation mode:" -ForegroundColor White
         Write-Blank
 
-        $opt1Row = [Console]::CursorTop
         Write-Host "  > [1] ⚡ Express Auto Setup     (Recommended — best models for your hardware)" -ForegroundColor Cyan
         Write-Host "    [2] 🛠️  Custom Model Picker   (Browse live catalog and pick manually)" -ForegroundColor DarkGray
         Write-Blank
-        $hintRow = [Console]::CursorTop
-        Write-Host "  Auto-starting Express Setup in 5s  (↑/↓ switch • Enter confirm • C custom)" -ForegroundColor DarkGray
+        Write-Host "  Use ↑/↓ or 1/2 to choose, then press [Enter] (default: 1)" -ForegroundColor DarkGray
 
-        $countdownActive = $true
-        $remaining = 5
-        $lastTick = [DateTime]::UtcNow
+        # Compute rows relative to current CursorTop after printing (scroll-safe)
+        $endRow = [Console]::CursorTop
+        $opt1Row = [math]::Max(0, $endRow - 4)
+        $hintRow = [math]::Max(0, $endRow - 1)
 
         while ($true) {
-            if ([Console]::KeyAvailable) {
-                $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-                $countdownActive = $false
+            $key = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
-                if ($key.VirtualKeyCode -eq 38 -or $key.Character -eq '1') {
-                    $choice = 1
-                } elseif ($key.VirtualKeyCode -eq 40 -or $key.Character -eq '2') {
-                    $choice = 2
-                } elseif ($key.Character -eq 'c' -or $key.Character -eq 'C') {
-                    $choice = 2
-                    break
-                } elseif ($key.VirtualKeyCode -eq 13) {
-                    break
-                }
-
-                try {
-                    [Console]::SetCursorPosition(0, $opt1Row)
-                    if ($choice -eq 1) {
-                        Write-Host "  > [1] ⚡ Express Auto Setup     (Recommended — best models for your hardware)" -ForegroundColor Cyan
-                        Write-Host "    [2] 🛠️  Custom Model Picker   (Browse live catalog and pick manually)" -ForegroundColor DarkGray
-                    } else {
-                        Write-Host "    [1] ⚡ Express Auto Setup     (Recommended — best models for your hardware)" -ForegroundColor DarkGray
-                        Write-Host "  > [2] 🛠️  Custom Model Picker   (Browse live catalog and pick manually)" -ForegroundColor Yellow
-                    }
-                    [Console]::SetCursorPosition(0, $hintRow)
-                    Write-Host ("  Selected option [$choice] — press [Enter] to continue" + (" " * 30)) -ForegroundColor White
-                } catch {}
+            if ($key.VirtualKeyCode -eq 38 -or $key.Character -eq '1') {
+                $choice = 1
+            } elseif ($key.VirtualKeyCode -eq 40 -or $key.Character -eq '2') {
+                $choice = 2
+            } elseif ($key.Character -eq 'c' -or $key.Character -eq 'C') {
+                $choice = 2
+                break
+            } elseif ($key.VirtualKeyCode -eq 13) {
+                break
+            } else {
+                continue
             }
 
-            if ($countdownActive) {
-                $now = [DateTime]::UtcNow
-                if (($now - $lastTick).TotalSeconds -ge 1) {
-                    $remaining--
-                    $lastTick = $now
-                    if ($remaining -le 0) {
-                        try {
-                            [Console]::SetCursorPosition(0, $hintRow)
-                            Write-Host ("  ✔  Auto-starting Express Setup..." + (" " * 45)) -ForegroundColor Green
-                        } catch {}
-                        break
-                    }
-                    try {
-                        [Console]::SetCursorPosition(0, $hintRow)
-                        Write-Host ("  Auto-starting Express Setup in ${remaining}s  (↑/↓ switch • Enter confirm • C custom)  ") -ForegroundColor DarkGray
-                    } catch {}
+            try {
+                [Console]::SetCursorPosition(0, $opt1Row)
+                if ($choice -eq 1) {
+                    Write-Host "  > [1] ⚡ Express Auto Setup     (Recommended — best models for your hardware)" -ForegroundColor Cyan
+                    Write-Host "    [2] 🛠️  Custom Model Picker   (Browse live catalog and pick manually)" -ForegroundColor DarkGray
+                } else {
+                    Write-Host "    [1] ⚡ Express Auto Setup     (Recommended — best models for your hardware)" -ForegroundColor DarkGray
+                    Write-Host "  > [2] 🛠️  Custom Model Picker   (Browse live catalog and pick manually)" -ForegroundColor Yellow
                 }
-            }
-            Start-Sleep -Milliseconds 60
+                [Console]::SetCursorPosition(0, $hintRow)
+                Write-Host ("  Selected [$choice] — press [Enter] to confirm" + (" " * 25)) -ForegroundColor White
+            } catch {}
         }
         Write-Blank
     }

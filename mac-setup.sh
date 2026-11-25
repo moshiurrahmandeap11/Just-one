@@ -418,50 +418,41 @@ select_mode_and_models() {
     if [ "${JUST_ONE_AUTO:-0}" != "1" ] && [ -t 1 ] && [ -r /dev/tty ]; then
         echo -e "  ${WHITE}Select installation mode:${RESET}"
         blank
-        render_mode_options 1 "Auto-starting Express Setup in 5s  (↑/↓ switch • Enter confirm • C custom)"
+        render_mode_options 1 "Use ↑/↓ or 1/2 to choose, then press [Enter] (default: 1)"
 
-        local remaining=5
-        local countdown=true
         while true; do
             local key=""
-            if IFS= read -rsn1 -t 1 key < /dev/tty; then
-                countdown=false
-                if [ "$key" = $'\x1b' ]; then
-                    local seq_rest=""
-                    IFS= read -rsn2 -t 1 seq_rest < /dev/tty || true
-                    if [ "$seq_rest" = "[A" ]; then
-                        choice=1
-                    elif [ "$seq_rest" = "[B" ]; then
-                        choice=2
-                    fi
-                elif [ "$key" = "1" ]; then
-                    choice=1
-                elif [ "$key" = "2" ]; then
-                    choice=2
-                elif [ "$key" = "c" ] || [ "$key" = "C" ]; then
-                    choice=2
-                    printf "\033[4A"
-                    render_mode_options "$choice" "Selected option [2] — opening Custom Model Picker..."
-                    break
-                elif [ -z "$key" ]; then
-                    printf "\033[4A"
-                    render_mode_options "$choice" "Selected option [$choice] — continuing..."
-                    break
-                fi
-                printf "\033[4A"
-                render_mode_options "$choice" "Selected option [$choice] — press [Enter] to continue"
-            else
-                if [ "$countdown" = true ]; then
-                    remaining=$(( remaining - 1 ))
-                    if [ "$remaining" -le 0 ]; then
-                        printf "\033[4A"
-                        render_mode_options "$choice" "${GREEN}✔  Auto-starting Express Setup...${RESET}"
-                        break
-                    fi
-                    printf "\033[4A"
-                    render_mode_options "$choice" "Auto-starting Express Setup in ${remaining}s  (↑/↓ switch • Enter confirm • C custom)"
-                fi
+            if ! IFS= read -rsn1 key < /dev/tty; then
+                break
             fi
+            if [ "$key" = $'\x1b' ]; then
+                local seq_rest=""
+                IFS= read -rsn2 -t 1 seq_rest < /dev/tty || true
+                if [ "$seq_rest" = "[A" ]; then
+                    choice=1
+                elif [ "$seq_rest" = "[B" ]; then
+                    choice=2
+                else
+                    continue
+                fi
+            elif [ "$key" = "1" ]; then
+                choice=1
+            elif [ "$key" = "2" ]; then
+                choice=2
+            elif [ "$key" = "c" ] || [ "$key" = "C" ]; then
+                choice=2
+                printf "\033[4A"
+                render_mode_options "$choice" "Selected [2] — opening Custom Model Picker..."
+                break
+            elif [ -z "$key" ]; then
+                printf "\033[4A"
+                render_mode_options "$choice" "Confirmed [$choice]"
+                break
+            else
+                continue
+            fi
+            printf "\033[4A"
+            render_mode_options "$choice" "Selected [$choice] — press [Enter] to confirm"
         done
         blank
     fi
