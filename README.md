@@ -22,7 +22,7 @@
 
 > Full-stack Developer | AI Automation Builder
 
-- **Portfolio:** [moshiurrahman.online](https://moshiurrahman.online)  
+- **Portfolio:** [moshiur.pro](https://moshiur.pro)  
 - **GitHub:** [github.com/moshiurrahmandeap11](https://github.com/moshiurrahmandeap11)
 - **LinkedIn:** [linkedin.com/in/moshiurrahmandeap](https://linkedin.com/in/moshiurrahmandeap)
 
