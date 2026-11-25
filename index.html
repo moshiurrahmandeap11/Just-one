@@ -15,7 +15,7 @@
   <!-- Fonts & Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Space+Grotesk:wght@400;500&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -23,8 +23,9 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['"Inter"', 'system-ui', 'sans-serif'],
-            mono: ['"JetBrains Mono"', 'monospace'],
+            display: ['"Space Grotesk"', 'system-ui', 'sans-serif'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', '"Inter"', 'system-ui', 'sans-serif'],
+            mono: ['ui-monospace', '"SF Mono"', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
           }
         }
       }
@@ -35,6 +36,22 @@
       background-color: #09090b;
       color: #e4e4e7;
     }
+    .term-line {
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 260ms cubic-bezier(0.22, 1, 0.36, 1), transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .term-line.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    @keyframes cursorBlink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .term-cursor {
+      animation: cursorBlink 1s steps(1, end) infinite;
+    }
   </style>
 </head>
 <body class="font-sans font-normal antialiased selection:bg-zinc-700 selection:text-white">
@@ -42,11 +59,8 @@
   <!-- Navigation -->
   <nav class="sticky top-0 z-50 bg-[#09090b]/90 backdrop-blur border-b border-zinc-800/80">
     <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="w-7 h-7 rounded-md bg-zinc-100 text-zinc-950 flex items-center justify-center font-mono font-medium text-sm">
-          1
-        </div>
-        <span class="font-medium text-base tracking-tight text-zinc-100">Just One</span>
+      <div class="flex items-center gap-2.5">
+        <span class="font-display font-medium text-base tracking-tight text-zinc-100">Just One</span>
         <span class="px-2 py-0.5 rounded text-xs font-mono text-zinc-400 bg-zinc-900 border border-zinc-800">v2.5</span>
       </div>
 
@@ -69,7 +83,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
       <!-- Left: Title + Command -->
       <div class="lg:col-span-6 space-y-6 pt-2">
-        <h1 class="text-3xl sm:text-5xl font-medium tracking-tight text-zinc-100 leading-[1.15]">
+        <h1 class="font-display text-3xl sm:text-5xl font-medium tracking-tight text-zinc-100 leading-[1.12]">
           Local AI setup for your code editor in one command.
         </h1>
 
@@ -80,14 +94,15 @@
         <!-- Install Command Card -->
         <div class="bg-zinc-900/70 rounded-xl p-4 border border-zinc-800 space-y-3">
           <div class="flex items-center justify-between border-b border-zinc-800 pb-3">
-            <div class="flex gap-1.5" id="platform-tabs">
-              <button onclick="setPlatform('windows')" id="tab-windows" class="px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-950 transition-colors">
+            <div class="relative inline-flex items-center p-1 rounded-lg bg-[#09090b] border border-zinc-800/80" id="platform-tabs">
+              <div id="platform-indicator" class="absolute top-1 bottom-1 left-0 rounded-md bg-zinc-100 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] pointer-events-none"></div>
+              <button onclick="setPlatform('windows')" id="tab-windows" class="relative z-10 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-950 transition-colors duration-200">
                 Windows
               </button>
-              <button onclick="setPlatform('mac')" id="tab-mac" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors">
+              <button onclick="setPlatform('mac')" id="tab-mac" class="relative z-10 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors duration-200">
                 macOS
               </button>
-              <button onclick="setPlatform('linux')" id="tab-linux" class="px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors">
+              <button onclick="setPlatform('linux')" id="tab-linux" class="relative z-10 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors duration-200">
                 Linux
               </button>
             </div>
@@ -95,7 +110,7 @@
           </div>
 
           <div class="bg-[#09090b] rounded-lg px-3.5 py-3 flex items-center justify-between font-mono text-xs sm:text-sm border border-zinc-800/80">
-            <div class="flex items-center gap-2.5 overflow-x-auto py-0.5">
+            <div id="cmd-wrap" class="flex items-center gap-2.5 overflow-x-auto py-0.5 transition-all duration-200">
               <span class="text-emerald-400 select-none" id="cmd-prefix">&gt;</span>
               <code id="cmd-text" class="text-zinc-200 whitespace-nowrap">irm https://one.moshiur.pro/windows | iex</code>
             </div>
@@ -121,25 +136,58 @@
               <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
               <div class="w-2.5 h-2.5 rounded-full bg-zinc-700"></div>
             </div>
-            <span class="text-xs font-mono text-zinc-500">just-one — v2.5</span>
-            <div class="w-8"></div>
+            <span class="text-xs font-mono text-zinc-500" id="term-title">just-one — v2.5</span>
+            <button onclick="playTerminal()" class="text-xs font-mono text-zinc-500 hover:text-zinc-200 transition-colors">Replay</button>
           </div>
 
-          <div class="p-5 font-mono text-xs text-zinc-300 space-y-1.5 leading-relaxed overflow-x-auto whitespace-nowrap">
-            <p class="text-cyan-400">╭───────────────────────────────────────────────────────────╮</p>
-            <p class="text-cyan-400">│ <span class="text-zinc-100">Just One v2.5 — Local AI &amp; Codebase RAG Automator</span>         │</p>
-            <p class="text-cyan-400">│ <span class="text-zinc-400">By Moshiur Rahman Deap  |  one.moshiur.pro</span>                │</p>
-            <p class="text-cyan-400">╰───────────────────────────────────────────────────────────╯</p>
-            <p class="text-zinc-500 pt-1">STEP 01/08 :: System Hardware &amp; Memory Profile</p>
-            <p class="text-zinc-400">  CPU       | <span class="text-zinc-200">AMD Ryzen / Apple Silicon</span> (12 threads)</p>
-            <p class="text-zinc-400">  RAM       | <span class="text-zinc-200">16.0 GB</span> (16384 MB)</p>
-            <p class="text-zinc-400">  Safe AI   | <span class="text-emerald-400">[███████████████░░░░░░░░░]</span> <span class="text-zinc-100">10 GB</span> (65% limit)</p>
-            <p class="pt-1"><span class="text-emerald-400">[OK]</span> Ollama API server online (127.0.0.1:11434)</p>
-            <p><span class="text-emerald-400">[OK]</span> VS Code &amp; Cursor detected -- Continue ready</p>
-            <p><span class="text-emerald-400">[OK]</span> Models: <span class="text-cyan-300">qwen2.5-coder:7b</span>, <span class="text-cyan-300">deepseek-r1:7b</span></p>
-            <p><span class="text-emerald-400">[OK]</span> Autocomplete: <span class="text-cyan-300">qwen2.5-coder:1.5b</span></p>
-            <p><span class="text-emerald-400">[OK]</span> Embeddings: <span class="text-cyan-300">nomic-embed-text</span> (@codebase)</p>
-            <p><span class="text-emerald-400">[OK]</span> Config written -&gt; ~/.continue/config.yaml</p>
+          <div class="p-5 font-mono text-xs text-zinc-300 space-y-2 leading-relaxed overflow-x-auto">
+            <!-- Typed Command Line -->
+            <div class="flex items-center gap-2 text-zinc-200 pb-1">
+              <span class="text-emerald-400 select-none" id="term-prompt">&gt;</span>
+              <span id="term-typed" class="whitespace-nowrap"></span>
+              <span id="term-type-cursor" class="inline-block w-1.5 h-3.5 bg-zinc-400 term-cursor"></span>
+            </div>
+
+            <!-- Framed Banner Card (CSS border = pixel-perfect alignment) -->
+            <div class="term-line rounded-md border border-cyan-500/35 bg-cyan-950/10 px-3.5 py-2.5 space-y-0.5" data-step="0">
+              <div class="text-zinc-100">Just One v2.5 — Local AI &amp; Codebase RAG Automator</div>
+              <div class="text-zinc-400">By Moshiur Rahman Deap  |  one.moshiur.pro</div>
+            </div>
+
+            <!-- Hardware Profile -->
+            <div class="term-line pt-1 text-zinc-500" data-step="1">STEP 01/08 :: System Hardware &amp; Memory Profile</div>
+            <div class="term-line rounded-md border border-zinc-800 bg-[#09090b]/80 px-3.5 py-2.5 space-y-1.5" data-step="2">
+              <div class="grid grid-cols-[84px_1fr] gap-2">
+                <span class="text-zinc-500">CPU</span>
+                <span class="text-zinc-200" id="term-cpu">AMD Ryzen / Apple Silicon <span class="text-zinc-500">(12 threads)</span></span>
+              </div>
+              <div class="grid grid-cols-[84px_1fr] gap-2">
+                <span class="text-zinc-500">RAM</span>
+                <span class="text-zinc-200">16.0 GB <span class="text-zinc-500">(16384 MB)</span></span>
+              </div>
+              <div class="grid grid-cols-[84px_1fr] items-center gap-2">
+                <span class="text-zinc-500">Safe AI</span>
+                <div class="flex items-center gap-2.5">
+                  <div class="w-28 h-2 rounded-sm bg-zinc-800 overflow-hidden">
+                    <div id="term-budget-bar" class="h-full bg-emerald-400 transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]" style="width: 0%;"></div>
+                  </div>
+                  <span class="text-zinc-100">10 GB <span class="text-zinc-500">(65% limit)</span></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Automated Steps -->
+            <div class="space-y-1 pt-1">
+              <div class="term-line" data-step="3"><span class="text-emerald-400">[OK]</span> Ollama API server online (127.0.0.1:11434)</div>
+              <div class="term-line" data-step="4"><span class="text-emerald-400">[OK]</span> <span id="term-editors">VS Code &amp; Cursor detected -- Continue ready</span></div>
+              <div class="term-line" data-step="5"><span class="text-emerald-400">[OK]</span> Models: <span class="text-cyan-300">qwen2.5-coder:7b</span>, <span class="text-cyan-300">deepseek-r1:7b</span></div>
+              <div class="term-line" data-step="6"><span class="text-emerald-400">[OK]</span> Autocomplete: <span class="text-cyan-300">qwen2.5-coder:1.5b</span></div>
+              <div class="term-line" data-step="7"><span class="text-emerald-400">[OK]</span> Embeddings: <span class="text-cyan-300">nomic-embed-text</span> (@codebase)</div>
+              <div class="term-line flex items-center gap-2" data-step="8">
+                <span><span class="text-emerald-400">[OK]</span> Config written -&gt; ~/.continue/config.yaml</span>
+                <span class="inline-block w-1.5 h-3.5 bg-emerald-400 term-cursor"></span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -150,7 +198,7 @@
   <section id="calculator" class="max-w-7xl mx-auto px-6 pb-20">
     <div class="rounded-xl bg-zinc-900/40 border border-zinc-800 p-6 sm:p-10">
       <div class="mb-8">
-        <h2 class="text-2xl font-medium text-zinc-100 mb-1.5">Hardware compatibility</h2>
+        <h2 class="font-display text-2xl font-medium tracking-tight text-zinc-100 mb-1.5">Hardware compatibility</h2>
         <p class="text-sm text-zinc-400">Select your RAM and GPU to check which preset the installer picks for your machine.</p>
       </div>
 
@@ -159,11 +207,12 @@
         <div class="lg:col-span-5 space-y-5">
           <div>
             <label class="block text-sm text-zinc-300 mb-2">System memory (RAM)</label>
-            <div class="grid grid-cols-4 gap-2" id="ram-selector">
-              <button onclick="calcHardware(8)" class="ram-btn py-2 rounded-lg border border-zinc-800 text-sm bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition-colors">8 GB</button>
-              <button onclick="calcHardware(16)" class="ram-btn active py-2 rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-950 font-medium text-sm transition-colors">16 GB</button>
-              <button onclick="calcHardware(24)" class="ram-btn py-2 rounded-lg border border-zinc-800 text-sm bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition-colors">24 GB</button>
-              <button onclick="calcHardware(32)" class="ram-btn py-2 rounded-lg border border-zinc-800 text-sm bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition-colors">32 GB+</button>
+            <div class="relative grid grid-cols-4 gap-1 p-1 rounded-lg bg-[#09090b] border border-zinc-800" id="ram-selector">
+              <div id="ram-indicator" class="absolute top-1 bottom-1 left-0 rounded-md bg-zinc-100 transition-all duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] pointer-events-none"></div>
+              <button onclick="calcHardware(8)" data-ram="8" class="ram-btn relative z-10 py-1.5 rounded-md text-sm text-zinc-400 hover:text-zinc-100 transition-colors duration-200">8 GB</button>
+              <button onclick="calcHardware(16)" data-ram="16" class="ram-btn active relative z-10 py-1.5 rounded-md text-zinc-950 font-medium text-sm transition-colors duration-200">16 GB</button>
+              <button onclick="calcHardware(24)" data-ram="24" class="ram-btn relative z-10 py-1.5 rounded-md text-sm text-zinc-400 hover:text-zinc-100 transition-colors duration-200">24 GB</button>
+              <button onclick="calcHardware(32)" data-ram="32" class="ram-btn relative z-10 py-1.5 rounded-md text-sm text-zinc-400 hover:text-zinc-100 transition-colors duration-200">32 GB+</button>
             </div>
           </div>
 
@@ -239,14 +288,14 @@
   <!-- What it sets up -->
   <section id="setup-details" class="max-w-7xl mx-auto px-6 pb-20">
     <div class="mb-8">
-      <h2 class="text-2xl font-medium text-zinc-100 mb-1.5">What the script sets up</h2>
+      <h2 class="font-display text-2xl font-medium tracking-tight text-zinc-100 mb-1.5">What the script sets up</h2>
       <p class="text-sm text-zinc-400">Automated steps across Windows, macOS, and Linux.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
       <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800">
         <div class="text-xs font-mono text-zinc-500 mb-2">01 / Runtime</div>
-        <h3 class="text-base font-medium text-zinc-100 mb-1.5">Ollama &amp; GPU flags</h3>
+        <h3 class="font-display text-base font-medium text-zinc-100 mb-1.5">Ollama &amp; GPU flags</h3>
         <p class="text-sm text-zinc-400 leading-relaxed">
           Installs Ollama if missing, enables <code class="text-zinc-300 font-mono text-xs">OLLAMA_FLASH_ATTENTION=1</code> and <code class="text-zinc-300 font-mono text-xs">24h</code> keep-alive, and waits for port <code class="text-zinc-300 font-mono text-xs">11434</code>.
         </p>
@@ -254,7 +303,7 @@
 
       <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800">
         <div class="text-xs font-mono text-zinc-500 mb-2">02 / Models</div>
-        <h3 class="text-base font-medium text-zinc-100 mb-1.5">65% memory filtering</h3>
+        <h3 class="font-display text-base font-medium text-zinc-100 mb-1.5">65% memory filtering</h3>
         <p class="text-sm text-zinc-400 leading-relaxed">
           Reads RAM and VRAM, lets you choose Express presets or pick from the live Ollama catalog, and pulls <code class="text-zinc-300 font-mono text-xs">nomic-embed-text</code> for <code class="text-zinc-300 font-mono text-xs">@codebase</code>.
         </p>
@@ -262,7 +311,7 @@
 
       <div class="p-5 rounded-xl bg-zinc-900/40 border border-zinc-800">
         <div class="text-xs font-mono text-zinc-500 mb-2">03 / Editor</div>
-        <h3 class="text-base font-medium text-zinc-100 mb-1.5">Continue YAML v1</h3>
+        <h3 class="font-display text-base font-medium text-zinc-100 mb-1.5">Continue YAML v1</h3>
         <p class="text-sm text-zinc-400 leading-relaxed">
           Installs <code class="text-zinc-300 font-mono text-xs">Continue.continue</code> across detected editors, backs up existing configs, writes <code class="text-zinc-300 font-mono text-xs">~/.continue/config.yaml</code>, and skips API-key onboarding.
         </p>
@@ -300,18 +349,113 @@
       linux: 'curl -fsSL https://one.moshiur.pro/linux | bash'
     };
 
-    function setPlatform(platform) {
+    function moveIndicator(indicatorId, activeEl, instant) {
+      const indicator = document.getElementById(indicatorId);
+      if (!indicator || !activeEl) return;
+      if (instant) {
+        indicator.style.transition = 'none';
+      }
+      indicator.style.width = activeEl.offsetWidth + 'px';
+      indicator.style.transform = 'translateX(' + activeEl.offsetLeft + 'px)';
+      if (instant) {
+        indicator.offsetHeight;
+        indicator.style.transition = '';
+      }
+    }
+
+    function setPlatform(platform, instant) {
+      const changed = currentPlatform !== platform;
       currentPlatform = platform;
-      document.getElementById('cmd-text').innerText = commands[platform];
-      document.getElementById('cmd-prefix').innerText = platform === 'windows' ? '>' : '$';
+
+      const cmdWrap = document.getElementById('cmd-wrap');
+      const cmdText = document.getElementById('cmd-text');
+      const cmdPrefix = document.getElementById('cmd-prefix');
+
+      if (!instant && changed && cmdWrap) {
+        cmdWrap.style.opacity = '0';
+        cmdWrap.style.transform = 'translateY(3px)';
+        setTimeout(() => {
+          cmdText.innerText = commands[platform];
+          cmdPrefix.innerText = platform === 'windows' ? '>' : '$';
+          cmdWrap.style.opacity = '1';
+          cmdWrap.style.transform = 'translateY(0)';
+        }, 120);
+      } else {
+        cmdText.innerText = commands[platform];
+        cmdPrefix.innerText = platform === 'windows' ? '>' : '$';
+      }
 
       ['windows', 'mac', 'linux'].forEach(p => {
         const btn = document.getElementById('tab-' + p);
         if (p === platform) {
-          btn.className = 'px-3 py-1.5 rounded-md text-xs font-medium bg-zinc-100 text-zinc-950 transition-colors';
+          btn.className = 'relative z-10 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-950 transition-colors duration-200';
+          moveIndicator('platform-indicator', btn, instant);
         } else {
-          btn.className = 'px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors';
+          btn.className = 'relative z-10 px-3 py-1.5 rounded-md text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors duration-200';
         }
+      });
+
+      if (!instant && changed) {
+        playTerminal();
+      }
+    }
+
+    let termTimers = [];
+    function clearTermTimers() {
+      termTimers.forEach(id => clearTimeout(id));
+      termTimers = [];
+    }
+
+    function playTerminal() {
+      clearTermTimers();
+
+      const promptEl = document.getElementById('term-prompt');
+      const typedEl = document.getElementById('term-typed');
+      const typeCursorEl = document.getElementById('term-type-cursor');
+      const budgetBar = document.getElementById('term-budget-bar');
+      const cpuEl = document.getElementById('term-cpu');
+      const lines = document.querySelectorAll('.term-line');
+
+      if (!typedEl) return;
+
+      const cmd = commands[currentPlatform];
+      promptEl.innerText = currentPlatform === 'windows' ? '>' : '$';
+      cpuEl.innerHTML = currentPlatform === 'mac'
+        ? 'Apple Silicon M3 <span class="text-zinc-500">(12 threads)</span>'
+        : 'AMD Ryzen / Intel <span class="text-zinc-500">(12 threads)</span>';
+
+      typedEl.innerText = '';
+      typeCursorEl.style.display = 'inline-block';
+      budgetBar.style.width = '0%';
+      lines.forEach(el => el.classList.remove('is-visible'));
+
+      // Type command smoothly
+      let charIdx = 0;
+      const typeSpeed = 16;
+      for (let i = 1; i <= cmd.length; i++) {
+        termTimers.push(setTimeout(() => {
+          charIdx = i;
+          typedEl.innerText = cmd.slice(0, charIdx);
+        }, i * typeSpeed));
+      }
+
+      const afterType = cmd.length * typeSpeed + 140;
+      termTimers.push(setTimeout(() => {
+        typeCursorEl.style.display = 'none';
+      }, afterType));
+
+      // Reveal lines sequentially
+      const stepDelay = 210;
+      lines.forEach((el, idx) => {
+        const delay = afterType + idx * stepDelay;
+        termTimers.push(setTimeout(() => {
+          el.classList.add('is-visible');
+          if (el.dataset.step === '2') {
+            setTimeout(() => {
+              budgetBar.style.width = '65%';
+            }, 80);
+          }
+        }, delay));
       });
     }
 
@@ -348,14 +492,15 @@
     }
 
     let selectedRam = 16;
-    function calcHardware(ram) {
+    function calcHardware(ram, instant) {
       if (ram) {
         selectedRam = ram;
         document.querySelectorAll('.ram-btn').forEach(btn => {
-          if (btn.innerText.includes(ram + ' GB')) {
-            btn.className = 'ram-btn active py-2 rounded-lg border border-zinc-200 bg-zinc-100 text-zinc-950 font-medium text-sm transition-colors';
+          if (Number(btn.dataset.ram) === ram) {
+            btn.className = 'ram-btn active relative z-10 py-1.5 rounded-md text-zinc-950 font-medium text-sm transition-colors duration-200';
+            moveIndicator('ram-indicator', btn, instant);
           } else {
-            btn.className = 'ram-btn py-2 rounded-lg border border-zinc-800 text-sm bg-zinc-900 text-zinc-400 hover:text-zinc-100 transition-colors';
+            btn.className = 'ram-btn relative z-10 py-1.5 rounded-md text-sm text-zinc-400 hover:text-zinc-100 transition-colors duration-200';
           }
         });
       }
@@ -410,8 +555,20 @@
       loadBar.style.width = percent + '%';
     }
 
+    function syncIndicators() {
+      moveIndicator('platform-indicator', document.getElementById('tab-' + currentPlatform), true);
+      const activeRamBtn = document.querySelector('.ram-btn[data-ram="' + selectedRam + '"]');
+      moveIndicator('ram-indicator', activeRamBtn, true);
+    }
+
     // Init
-    calcHardware(16);
+    setPlatform('windows', true);
+    calcHardware(16, true);
+    playTerminal();
+    window.addEventListener('resize', syncIndicators);
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(syncIndicators);
+    }
   </script>
 </body>
 </html>
