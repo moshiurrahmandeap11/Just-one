@@ -822,22 +822,32 @@ function Set-ContinueConfig {
         } catch {}
     }
 
+    # Backup & remove legacy config.json so Continue loads config.yaml cleanly
+    $legacyJsonPath = "$configDir\config.json"
+    if (Test-Path $legacyJsonPath) {
+        $stamp = Get-Date -Format "yyyyMMdd-HHmmss"
+        try {
+            Move-Item -Path $legacyJsonPath -Destination "$configDir\config.json.bak.$stamp" -Force
+            Write-Info "Moved legacy config.json -> config.json.bak.$stamp"
+        } catch {}
+    }
+
     $modelsYamlLines = @()
     $hasFallback = $false
     foreach ($m in $FINAL_MODELS) {
         if ($m -eq $FALLBACK_MODEL) {
             $hasFallback = $true
-            $modelsYamlLines += "  - name: $m`n    provider: ollama`n    model: $m`n    roles:`n      - chat`n      - edit`n      - apply`n      - autocomplete"
+            $modelsYamlLines += "  - name: $m`n    provider: ollama`n    model: $m`n    apiBase: http://127.0.0.1:11434`n    roles:`n      - chat`n      - edit`n      - apply`n      - autocomplete"
         } else {
-            $modelsYamlLines += "  - name: $m`n    provider: ollama`n    model: $m`n    roles:`n      - chat`n      - edit`n      - apply"
+            $modelsYamlLines += "  - name: $m`n    provider: ollama`n    model: $m`n    apiBase: http://127.0.0.1:11434`n    roles:`n      - chat`n      - edit`n      - apply"
         }
     }
 
     if (-not $hasFallback) {
-        $modelsYamlLines += "  - name: $FALLBACK_MODEL`n    provider: ollama`n    model: $FALLBACK_MODEL`n    roles:`n      - autocomplete"
+        $modelsYamlLines += "  - name: $FALLBACK_MODEL`n    provider: ollama`n    model: $FALLBACK_MODEL`n    apiBase: http://127.0.0.1:11434`n    roles:`n      - autocomplete"
     }
 
-    $modelsYamlLines += "  - name: $EMBEDDING_MODEL`n    provider: ollama`n    model: $EMBEDDING_MODEL`n    roles:`n      - embed"
+    $modelsYamlLines += "  - name: $EMBEDDING_MODEL`n    provider: ollama`n    model: $EMBEDDING_MODEL`n    apiBase: http://127.0.0.1:11434`n    roles:`n      - embed"
 
     $modelsBlock = $modelsYamlLines -join "`n`n"
 
@@ -872,6 +882,32 @@ context:
 "@
     [System.IO.File]::WriteAllText($rulesPath, $rulesContent, $utf8NoBom)
     Write-Log "Developer rules written -> $rulesPath"
+
+    # Dismiss Continue API-key onboarding card & reset stale workspace profile lock
+    $indexDir = "$configDir\index"
+    if (-not (Test-Path $indexDir)) {
+        New-Item -ItemType Directory -Path $indexDir -Force | Out-Null
+    }
+    $globalCtxPath = "$indexDir\globalContext.json"
+    $ctx = @{}
+    if (Test-Path $globalCtxPath) {
+        try {
+            $parsed = Get-Content $globalCtxPath -Raw -Encoding UTF8 | ConvertFrom-Json
+            if ($parsed) {
+                foreach ($prop in $parsed.PSObject.Properties) {
+                    $ctx[$prop.Name] = $prop.Value
+                }
+            }
+        } catch { $ctx = @{} }
+    }
+    $ctx["hasDismissedOnboardingCard"] = $true
+    $ctx["onboardingStatus"] = "Completed"
+    $ctx["lastSelectedProfileForWorkspace"] = @{}
+    try {
+        $ctxJson = $ctx | ConvertTo-Json -Depth 10
+        [System.IO.File]::WriteAllText($globalCtxPath, $ctxJson, $utf8NoBom)
+        Write-Log "Continue configured to skip API-key onboarding"
+    } catch {}
 }
 
 # -----------------------------------------------------------------
@@ -897,9 +933,13 @@ function Invoke-HealthCheckAndLaunch {
 
     if ($script:DETECTED_EDITORS.Count -gt 0) {
         $primary = $script:DETECTED_EDITORS[0]
+        $wasRunning = [bool](Get-Process -Name "Code","Cursor","VSCodium" -ErrorAction SilentlyContinue)
         try {
             Start-Process $primary.Cmd -ArgumentList "." -WindowStyle Normal
             Write-Log "Launched $($primary.Name) in current directory"
+            if ($wasRunning) {
+                Write-Warn "$($primary.Name) was already open -- run 'Developer: Reload Window' (Ctrl+Shift+P) if Continue shows Main Config."
+            }
         } catch {
             Write-Info "Open $($primary.Name) manually and click the Continue sidebar icon."
         }

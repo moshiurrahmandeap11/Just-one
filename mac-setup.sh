@@ -656,6 +656,13 @@ set_continue_config() {
         cp "$config_file" "$BACKUP_PATH" 2>/dev/null && info "Existing config backed up -> $BACKUP_PATH" || BACKUP_PATH=""
     fi
 
+    # Backup & remove legacy config.json so Continue loads config.yaml cleanly
+    if [ -f "$config_dir/config.json" ]; then
+        local jstamp
+        jstamp=$(date +"%Y%m%d-%H%M%S")
+        mv "$config_dir/config.json" "$config_dir/config.json.bak.$jstamp" 2>/dev/null && info "Moved legacy config.json -> config.json.bak.$jstamp" || true
+    fi
+
     cat > "$config_file" << EOF
 name: Local AI Config
 version: 1.0.0
@@ -672,6 +679,7 @@ EOF
   - name: $model
     provider: ollama
     model: $model
+    apiBase: http://127.0.0.1:11434
     roles:
       - chat
       - edit
@@ -684,6 +692,7 @@ EOF
   - name: $model
     provider: ollama
     model: $model
+    apiBase: http://127.0.0.1:11434
     roles:
       - chat
       - edit
@@ -698,6 +707,7 @@ EOF
   - name: $FALLBACK_MODEL
     provider: ollama
     model: $FALLBACK_MODEL
+    apiBase: http://127.0.0.1:11434
     roles:
       - autocomplete
 
@@ -708,6 +718,7 @@ EOF
   - name: $EMBEDDING_MODEL
     provider: ollama
     model: $EMBEDDING_MODEL
+    apiBase: http://127.0.0.1:11434
     roles:
       - embed
 
@@ -731,6 +742,35 @@ EOF
 - Do not leave unfinished placeholder comments like '// TODO' without implementation.
 EOF
     log "Developer rules written -> $rules_file"
+
+    # Dismiss Continue API-key onboarding card & reset stale workspace profile lock
+    local index_dir="$config_dir/index"
+    mkdir -p "$index_dir"
+    local global_ctx="$index_dir/globalContext.json"
+    if command -v python3 &>/dev/null; then
+        python3 - "$global_ctx" << 'PYEOF' 2>/dev/null || true
+import json, os, sys
+p = sys.argv[1]
+data = {}
+if os.path.exists(p):
+    try:
+        with open(p, "r", encoding="utf-8") as f:
+            loaded = json.load(f)
+            if isinstance(loaded, dict):
+                data = loaded
+    except Exception:
+        data = {}
+data["hasDismissedOnboardingCard"] = True
+data["onboardingStatus"] = "Completed"
+data["lastSelectedProfileForWorkspace"] = {}
+with open(p, "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=2)
+PYEOF
+        log "Continue configured to skip API-key onboarding"
+    elif [ ! -f "$global_ctx" ]; then
+        printf '{"hasDismissedOnboardingCard":true,"onboardingStatus":"Completed","lastSelectedProfileForWorkspace":{}}\n' > "$global_ctx"
+        log "Continue configured to skip API-key onboarding"
+    fi
 }
 
 # -----------------------------------------------------------------

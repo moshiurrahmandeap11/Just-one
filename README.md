@@ -112,6 +112,7 @@ models:
   - name: qwen2.5-coder:7b
     provider: ollama
     model: qwen2.5-coder:7b
+    apiBase: http://127.0.0.1:11434
     roles:
       - chat
       - edit
@@ -120,6 +121,7 @@ models:
   - name: deepseek-r1:7b
     provider: ollama
     model: deepseek-r1:7b
+    apiBase: http://127.0.0.1:11434
     roles:
       - chat
       - edit
@@ -128,12 +130,14 @@ models:
   - name: qwen2.5-coder:1.5b
     provider: ollama
     model: qwen2.5-coder:1.5b
+    apiBase: http://127.0.0.1:11434
     roles:
       - autocomplete
 
   - name: nomic-embed-text
     provider: ollama
     model: nomic-embed-text
+    apiBase: http://127.0.0.1:11434
     roles:
       - embed
 
