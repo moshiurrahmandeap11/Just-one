@@ -10,7 +10,7 @@
 > **One-command zero-config local AI setup for your code editor.**  
 > Installs Ollama, fetches models, filters them safely by your hardware, sets up Codebase RAG embeddings, and configures the Continue extension across **VS Code, Cursor, and VSCodium** — completely automatically.
 
-🌐 **Live Web Landing Page & Hardware Calculator:** [https://just-one-tau.vercel.app/](https://just-one-tau.vercel.app/)
+🌐 **Live Web Landing Page & Hardware Calculator:** [https://one.moshiur.pro/](https://one.moshiur.pro/)
 
 ![Command Gif](https://i.postimg.cc/Kcfs16k3/In-Shot-20260513-023053831-ezgif-com-video-to-gif-converter.gif)
 
@@ -22,7 +22,7 @@
 
 > Full-stack Developer | AI Automation Builder
 
-- **Portfolio:** [moshiurrahman.online](https://moshiurrahman.online)  
+- **Portfolio:** [moshiur.pro](https://moshiur.pro)  
 - **GitHub:** [github.com/moshiurrahmandeap11](https://github.com/moshiurrahmandeap11)
 - **LinkedIn:** [linkedin.com/in/moshiurrahmandeap](https://linkedin.com/in/moshiurrahmandeap)
 
@@ -34,7 +34,7 @@
 Open PowerShell (or Windows Terminal) and run:
 
 ```powershell
-irm https://just-one-tau.vercel.app/windows | iex
+irm https://one.moshiur.pro/windows | iex
 ```
 
 ---
@@ -43,7 +43,7 @@ irm https://just-one-tau.vercel.app/windows | iex
 Open Terminal and run:
 
 ```bash
-curl -fsSL https://just-one-tau.vercel.app/mac | bash
+curl -fsSL https://one.moshiur.pro/mac | bash
 ```
 
 ---
@@ -52,7 +52,7 @@ curl -fsSL https://just-one-tau.vercel.app/mac | bash
 Open Terminal and run:
 
 ```bash
-curl -fsSL https://just-one-tau.vercel.app/linux | bash
+curl -fsSL https://one.moshiur.pro/linux | bash
 ```
 
 ---
@@ -189,7 +189,7 @@ Just One automatically detects the first available editor CLI on your `PATH`:
 
 **Moshiur Rahman Deap**  
 - GitHub: [github.com/moshiurrahmandeap11](https://github.com/moshiurrahmandeap11)  
-- Website: [moshiurrahman.online](https://moshiurrahman.online)
+- Website: [moshiur.pro](https://moshiur.pro)
 
 ---
 

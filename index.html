@@ -10,7 +10,7 @@
   <meta property="og:title" content="Just One — Zero-Config Local AI for VS Code & Cursor" />
   <meta property="og:description" content="One command to turn your IDE into an AI powerhouse with Ollama, Continue, and Codebase RAG." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://just-one-tau.vercel.app/" />
+  <meta property="og:url" content="https://one.moshiur.pro/" />
 
   <!-- Fonts & Tailwind -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -129,7 +129,7 @@
       <div class="relative bg-black/60 rounded-xl p-4 flex items-center justify-between font-mono text-sm border border-white/5 group">
         <div class="flex items-center gap-3 overflow-x-auto py-1">
           <span class="text-cyan-400 select-none font-bold" id="cmd-prefix">&gt;</span>
-          <code id="cmd-text" class="text-slate-100 whitespace-nowrap">irm https://just-one-tau.vercel.app/windows | iex</code>
+          <code id="cmd-text" class="text-slate-100 whitespace-nowrap">irm https://one.moshiur.pro/windows | iex</code>
         </div>
         <button onclick="copyCommand()" class="ml-3 shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium text-white transition-all border border-white/10">
           <svg id="copy-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
@@ -362,7 +362,7 @@
       <div class="text-sm text-slate-400 text-center sm:text-right">
         Created with ❤️ by <a href="https://github.com/moshiurrahmandeap11" target="_blank" rel="noopener noreferrer" class="text-cyan-400 hover:underline font-semibold">Moshiur Rahman Deap</a>
         <div class="text-xs text-slate-500 mt-1">
-          <a href="https://moshiurrahman.online" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">Portfolio</a> • 
+          <a href="https://moshiur.pro" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">Portfolio</a> • 
           <a href="https://linkedin.com/in/moshiurrahmandeap" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">LinkedIn</a> • 
           <a href="https://github.com/moshiurrahmandeap11/Just-one" target="_blank" rel="noopener noreferrer" class="hover:text-slate-300">GitHub Repo</a>
         </div>
@@ -374,9 +374,9 @@
   <script>
     let currentPlatform = 'windows';
     const commands = {
-      windows: 'irm https://just-one-tau.vercel.app/windows | iex',
-      mac: 'curl -fsSL https://just-one-tau.vercel.app/mac | bash',
-      linux: 'curl -fsSL https://just-one-tau.vercel.app/linux | bash'
+      windows: 'irm https://one.moshiur.pro/windows | iex',
+      mac: 'curl -fsSL https://one.moshiur.pro/mac | bash',
+      linux: 'curl -fsSL https://one.moshiur.pro/linux | bash'
     };
 
     function setPlatform(platform) {
