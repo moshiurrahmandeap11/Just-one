@@ -61,16 +61,14 @@ curl -fsSL https://one.moshiur.pro/linux | bash
 
 | Step | Action |
 | :--- | :--- |
-| 1 | **System Hardware Profiling**: Detects CPU cores, RAM, GPU/VRAM, and free disk space. |
-| 2 | **GPU Acceleration Optimizations**: Sets `OLLAMA_FLASH_ATTENTION=1` and `24h` model keep-alive. |
-| 3 | **Ollama Installation**: Installs Ollama and starts the local background server daemon. |
-| 4 | **Multi-Editor Detection**: Checks for **VS Code**, **Cursor**, **VS Code Insiders**, or **VSCodium** and installs the Continue extension. |
-| 5 | **Live Model Discovery**: Fetches model families from `ollama.com/library` and filters them by memory footprint. |
-| 6 | **1-Click Quick Setup or Custom Table**: Choose between 1-click recommended setup or custom selection. |
-| 7 | **Tab-Autocomplete Model**: Guarantees fast local FIM model (`qwen2.5-coder:1.5b`) for instant tab completions. |
-| 8 | **Codebase RAG Embedding Model**: Automatically installs `nomic-embed-text` so `@codebase` semantic indexing works immediately. |
-| 9 | **Configuration & Rules**: Generates `~/.continue/config.yaml` and `~/.continue/.continuerules`. |
-| 10 | **Editor Launch**: Automatically launches your code editor in the current directory ready for local AI pairing. |
+| 1 | **System Hardware Profiling**: Detects CPU threads, RAM, GPU/VRAM, and free disk space with a live 65% memory budget bar. |
+| 2 | **Ollama Runtime & Optimizations**: Sets `OLLAMA_FLASH_ATTENTION=1` & `24h` keep-alive, installs Ollama, and waits for the local API. |
+| 3 | **All-Editor Auto-Setup**: Detects **VS Code**, **Cursor**, **VS Code Insiders**, and **VSCodium** simultaneously and installs Continue in all of them. |
+| 4 | **Live Model Discovery**: Fetches model families from `ollama.com/library` and filters them by memory footprint. |
+| 5 | **5s Express Countdown or Custom Picker**: Hands-free 5-second auto-start (or interactive `↑/↓` arrow menu for custom selection). |
+| 6 | **Models + Tab-Autocomplete + RAG**: Pulls your coding/reasoning models, `qwen2.5-coder:1.5b` (FIM autocomplete), and `nomic-embed-text` (`@codebase` RAG). |
+| 7 | **Safe Backup & YAML v1 Config**: Backs up any existing `config.yaml` and generates pure `schema: v1` `~/.continue/config.yaml` + `.continuerules`. |
+| 8 | **Live RAG Health Check & Launch**: Verifies local embeddings via `/api/embeddings` and launches your editor ready to code. |
 
 ---
 
